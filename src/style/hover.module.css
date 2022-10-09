@@ -1,0 +1,24 @@
+:root{
+	--Y-pos: 10px;
+	--X-pos: -5px;
+}
+
+.add {
+	position: absolute;
+	top: var(--Y-pos);
+	left: var(--X-pos);
+}
+
+.remove {
+	position: absolute;
+	top: var(--Y-pos);
+	right: var(--X-pos);
+}
+
+.hoverBlock {
+	position: relative;
+}
+
+/* .hoverBlock > span {
+	position: relative;
+} */

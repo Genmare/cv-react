@@ -1,0 +1,218 @@
+{
+    "head": {
+        "name": "Grégory FICHES",
+        "occupation": "Concepteur développeur d'application"
+    },
+    "infos": {
+        "interests": [
+            {
+                "id": 0,
+                "int": "Astrophysique"
+            },
+            {
+                "id": 1,
+                "int": "Mécanique (Sc. Physique)"
+            },
+            {
+                "id": 2,
+                "int": "Le Japon"
+            },
+            {
+                "id": 3,
+                "int": "Course à pied"
+            }
+        ],
+        "languages": [
+            {
+                "id": 0,
+                "language": "anglais",
+                "level": "lecture document technique"
+            },
+            {
+                "id": 1,
+                "language": "espagnol",
+                "level": "niveau usuel"
+            },
+            {
+                "id": 3,
+                "language": "japonais",
+                "level": "niveau découverte"
+            }
+        ],
+        "infoDesc": [
+            {
+                "id": 0,
+                "icon": "FaMapMarkerAlt",
+                "text": "Résidence le Clos Bât 5\n27 chemin des Maraîchers 31400 TOULOUSE"
+            },
+            {
+                "id": 1,
+                "icon": "FaMobileAlt",
+                "text": "06 89 03 34 51"
+            },
+            {
+                "id": 2,
+                "icon": "FaPhoneAlt",
+                "text": "05 62 17 65 18"
+            },
+            {
+                "id": 3,
+                "icon": "FaAt",
+                "text": "gregfic@free.fr"
+            },
+            {
+                "id": 4,
+                "icon": "FaUser",
+                "text": "42 ans"
+            },
+            {
+                "id": 5,
+                "icon": "FaCarAlt",
+                "text": "Permis B + Véhicule"
+            },
+            {
+                "id": 6,
+                "icon": "FaGithub",
+                "text": "github.com/Genmare"
+            }
+        ]
+    },
+    "body": [
+        {
+            "id": 0,
+            "title": "compétences professionnelles",
+            "sentence": [
+                {
+                    "id": 0,
+                    "isEnum": true,
+                    "intitule": "Langages de programmation",
+                    "iteration": [
+                        "React.js",
+                        "Android",
+                        "Java",
+                        "Kotlin",
+                        "React Native",
+                        "Flutter",
+                        "Angular",
+                        "HTML5",
+                        "CSS3",
+                        "JavaScript",
+                        "Node.js",
+                        "Next.js",
+                        "JavaEE",
+                        "PHP",
+                        "C",
+                        "C++",
+                        "API OpenGL",
+                        "Ogre 3D",
+                        "API Qt",
+                        "shell bash"
+                    ]
+                },
+                {
+                    "id": 1,
+                    "isEnum": true,
+                    "intitule": "IDE",
+                    "iteration": [
+                        "Android Studio",
+                        "Visual Studio Code",
+                        "Eclipse",
+                        "Kdevelop"
+                    ]
+                },
+                {
+                    "id": 2,
+                    "isEnum": true,
+                    "intitule": "Modeleur 3D",
+                    "iteration": [
+                        "Blender"
+                    ]
+                },
+                {
+                    "id": 3,
+                    "isEnum": true,
+                    "intitule": "Traitement d’image",
+                    "iteration": [
+                        "Gimp"
+                    ]
+                },
+                {
+                    "id": 4,
+                    "isEnum": true,
+                    "intitule": "Systèmes d'exploitation",
+                    "iteration": [
+                        "Windows XP/10",
+                        "Linux",
+                        "Unix"
+                    ]
+                }
+            ]
+        },
+        {
+            "id": 1,
+            "title": "formation",
+            "sentence": [
+                {
+                    "id": 0,
+                    "isEnum": false,
+                    "intitule": "2016 – 2021 : MOOC OpenClassRooms",
+                    "phrase": "(Java, Android, Kotlin, Angular, React Native, Node.js, JavaEE, PHP, HTML5, CSS3, JavaScript, Docker, MySQL, Git, UML, Agile, SCRUM, C++, Qt)"
+                },
+                {
+                    "id": 1,
+                    "isEnum": false,
+                    "intitule": "2006 : MASTER Pro IIN, Ingénierie de l’image numérique.",
+                    "phrase": "Université Paul Sabatier (Toulouse)"
+                },
+                {
+                    "id": 2,
+                    "isEnum": false,
+                    "intitule": "2000 : Baccalauréat général scientifique",
+                    "phrase": "Lycée BELLEVUE (Toulouse)"
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "title": "expérience professionnelle",
+            "sentence": [
+                {
+                    "id": 0,
+                    "isEnum": false,
+                    "intitule": "2006 (avril – septembre) : Développeur stagiaire au CNES de Toulouse",
+                    "phrase": "\nDescriptif : Simulation et visualisation des satellites en opération en orbite basse\nInterfacer le logiciel de visualisation OPALE avec le logiciel de mécanique spatiale CLEO."
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "title": "loisirs - activités extra-professionnelles",
+            "sentence": [
+                {
+                    "id": 0,
+                    "isEnum": true,
+                    "intitule": "Sites et youtuber sur le web",
+                    "iteration": [
+                        "The Net Ninja",
+                        "Traversy Media",
+                        "Grafikart",
+                        "KOOR.fr",
+                        "Fireship.io",
+                        "W3Schools",
+                        "freeCodeCamp"
+                    ]
+                },
+                {
+                    "id": 1,
+                    "isEnum": true,
+                    "intitule": "Lecture",
+                    "iteration": [
+                        "OpenGL Shading Language",
+                        "Mathematics for 3d Game Programming and Computer Graphics",
+                        "Introduction to 3d Game Programming With Directx 10"
+                    ]
+                }
+            ]
+        }
+    ]
+}
