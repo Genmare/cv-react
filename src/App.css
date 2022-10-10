@@ -18,9 +18,18 @@
 	--main-container-max-width: 1150px;
 	--a4-width: 21cm;
 	--a4-height: 29.7cm;
+	--error-width: 600px;
 	/* background-color: rgba(255, 255, 255, 0.384); */
 	--bg-sheet: rgba(100, 100, 100, 100);
 	--tool-bg: #e3e3e3;
+}
+
+.error {
+	width: var(--error-width);
+	/* margin: auto; */
+	text-align: center;
+
+	color: rgb(122, 55, 55);
 }
 
 #root {

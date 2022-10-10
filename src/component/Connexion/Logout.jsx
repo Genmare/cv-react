@@ -12,11 +12,12 @@ const Div = styled.div`
 	height: 100%;
 `;
 
-function Logout({ setIsAuth }) {
+function Logout({ logout }) {
 	const signUserOut = () => {
 		signOut()
 			.then(() => {
-				setIsAuth(false);
+				logout();
+				// setIsAuth(false);
 				sessionStorage.clear();
 				console.log("Déconnexion de l'utilisateur");
 			})

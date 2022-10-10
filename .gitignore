@@ -18,6 +18,8 @@
 .env.development.local
 .env.test.local
 .env.production.local
+/src/data/photoCV*.jpg
+/src/data/data*.json
 notes
 
 npm-debug.log*

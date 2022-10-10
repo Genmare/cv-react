@@ -40,7 +40,8 @@ function App() {
 			if (e) {
 				e.returnValue = ''; // Legacy method for cross browser support
 			}
-			return ''; // Legacy method for cross browser support
+			// return ''; // Legacy method for cross browser support
+			return undefined;
 		};
 
 		let dataStorage = null;
@@ -147,6 +148,19 @@ function App() {
 		}, 10 * 60);
 	};
 
+	/**
+	 * déconnecte l'utilisateur
+	 */
+	const logout = () => {
+		isHome = true;
+		setHome(true);
+		window.sessionStorage.clear();
+		setData(null);
+		dispatch({ type: 'clear' });
+		setCv(null);
+		setIsAuth(false);
+	};
+
 	// retourne le premier élément possedant la propriété
 	// const findEntityByProperty = (entity, property) => {
 	// 	let styles = styler(entity).get(['background']);
@@ -183,6 +197,7 @@ function App() {
 								dispatch({ type: 'clear' });
 								setCv(null);
 							}}
+							logout={logout}
 						/>
 					</div>
 				</MainContainer>
@@ -195,6 +210,7 @@ function App() {
 					setCv={setCv}
 					userData={userData}
 					setUserData={setUserData}
+					logout={logout}
 				/>
 			)}
 		</StyleProvider>

@@ -211,7 +211,7 @@ export default function ToolBar({
 	id_doc,
 	data,
 	dispatch,
-	setIsAuth,
+	logout,
 	componentRef,
 	toHome,
 }) {
@@ -404,7 +404,7 @@ export default function ToolBar({
 		<Container>
 			<div className="toolbarbtn" style={{ marginBottom: '20px' }}>
 				<button onClick={toHome}>Home</button>
-				<Logout setIsAuth={setIsAuth} />
+				<Logout logout={logout} />
 				<button onClick={() => writeDataWithRef(id_doc, data)}>
 					Sauvegarder
 				</button>

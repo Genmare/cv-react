@@ -145,13 +145,13 @@ const Nav = styled.div`
 	}
 `;
 
-function NavBar({ logName, setIsAuth }) {
+function NavBar({ logName, logout }) {
 	return (
 		<Nav>
 			<ul>
 				<li>{logName}</li>
 				<li>
-					<Logout setIsAuth={setIsAuth} />
+					<Logout logout={logout} />
 				</li>
 			</ul>
 		</Nav>
@@ -166,6 +166,7 @@ function Login({
 	setCv,
 	userData,
 	setUserData,
+	logout,
 }) {
 	const [isSignin, setIsSignin] = useState(false);
 	const [isSignup, setIsSignup] = useState(false);
@@ -215,7 +216,7 @@ function Login({
 					setData(data);
 				})
 				.catch((e) => {
-					const errorMsg = `Login impossible de downloader les data ${e}`;
+					const errorMsg = `Login, impossible de downloader les data: \n${e}`;
 					setError(errorMsg);
 					console.error(errorMsg);
 				});
@@ -288,7 +289,7 @@ function Login({
 			<ThemeProvider theme={themeOptions}>
 				<Container>
 					{isAuth && (
-						<NavBar logName={userData.name} setIsAuth={setIsAuth} />
+						<NavBar logName={userData.name} logout={logout} />
 					)}
 					{/* <Typography variant="h3" mb={2} style={{ fontWeight: 600 }}> */}
 					<Typography variant="h3" style={{ fontWeight: 600 }}>
@@ -377,7 +378,7 @@ function Login({
 							<SignUp setIsAuth={setIsAuth} />
 						</Animation>
 					)}
-					{error && <p>{error}</p>}
+					{error && <p className="error">{error}</p>}
 				</Container>
 			</ThemeProvider>
 		</>
