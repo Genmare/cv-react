@@ -4,6 +4,9 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 
+import { StyleProvider } from './utils/context';
+
+
 // ReactDOM.render(
 // 	<React.StrictMode>
 // 		<App />
@@ -14,6 +17,9 @@ import App from './App';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
 	<React.StrictMode>
+		<StyleProvider>
+
 		<App />
+		</StyleProvider>
 	</React.StrictMode>
 );

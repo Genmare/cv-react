@@ -1,7 +1,7 @@
 import { useState, useContext } from 'react';
 import { styled } from '@mui/material/styles';
 import Slider from '@mui/material/Slider';
-import { CSSTransition } from 'react-transition-group';
+// import { CSSTransition } from 'react-transition-group';
 import styles from '../style/toolbar.module.css';
 
 import { createTheme, ThemeProvider } from '@mui/material/styles';
@@ -13,7 +13,7 @@ import Paper from '@mui/material/Paper';
 import '../App.css';
 
 // import { ColorPicker, createColor } from 'mui-color';
-import ColorPicker from 'react-best-gradient-color-picker';
+// import ColorPicker from 'react-best-gradient-color-picker';
 
 import { PopoverPicker } from '../Widget/PopoverPicker/PopoverPicker';
 

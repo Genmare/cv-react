@@ -1,10 +1,9 @@
 import GitHubIcon from '@mui/icons-material/GitHub';
 import MailIcon from '@mui/icons-material/Mail';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
-import LogoutIcon from '@mui/icons-material/Logout';
 import Button from '@mui/material/Button';
 import { GithubAuthProvider, signInWithPopup } from 'firebase/auth';
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import styled from 'styled-components';
 import {
 	auth,
@@ -173,6 +172,8 @@ function Login({
 	// const [isAuth, setIsAuth] = useState(false);
 	const [error, setError] = useState(null);
 
+	const [uid, setUid] = useState('');
+
 	// const [userData, setUserData] = useState({
 	// 	name: '',
 	// 	cvList: [],
@@ -289,10 +290,15 @@ function Login({
 			<ThemeProvider theme={themeOptions}>
 				<Container>
 					{isAuth && (
-						<NavBar logName={userData.name} logout={logout} />
+						<NavBar
+							logName={userData.name}
+							logout={logout}
+						/>
 					)}
 					{/* <Typography variant="h3" mb={2} style={{ fontWeight: 600 }}> */}
-					<Typography variant="h3" style={{ fontWeight: 600 }}>
+					<Typography
+						variant='h3'
+						style={{ fontWeight: 600 }}>
 						CV MAKER
 					</Typography>
 					<Box
@@ -315,47 +321,43 @@ function Login({
 							'& hr': {
 								// mx: 0.5,
 							},
-						}}
-					>
+						}}>
 						<Div>
 							<Button
-								size="small"
-								color="inherit"
-								variant="outlined"
+								size='small'
+								color='inherit'
+								variant='outlined'
 								onClick={() => toggleButton(true)}
 								// endIcon={<PersonAdd />}
 								endIcon={<MailIcon />}
 								style={{ margin: '1em 0.5em' }}
-								disabled={isAuth}
-							>
+								disabled={isAuth}>
 								connexion
 							</Button>
 							<Button
 								// className="Button"
-								size="small"
-								color="inherit"
-								variant="outlined"
-								endIcon={<GitHubIcon fontSize="large" />}
+								size='small'
+								color='inherit'
+								variant='outlined'
+								endIcon={<GitHubIcon fontSize='large' />}
 								style={{ margin: '1em 0.5em' }}
 								onClick={signInWithGithub}
-								disabled={isAuth}
-							>
+								disabled={isAuth}>
 								Connexion
 							</Button>
 							<Divider
-								orientation="vertical"
-								variant="middle"
+								orientation='vertical'
+								variant='middle'
 								flexItem
 							/>
 							<Button
-								size="small"
-								color="inherit"
-								variant="outlined"
+								size='small'
+								color='inherit'
+								variant='outlined'
 								onClick={() => toggleButton(false)}
 								endIcon={<PersonAddIcon />}
 								style={{ margin: '1em 0.5em' }}
-								disabled={isAuth}
-							>
+								disabled={isAuth}>
 								S'inscrire
 							</Button>
 						</Div>
@@ -365,12 +367,17 @@ function Login({
 							<SignIn
 								setIsAuth={setIsAuth}
 								setUserData={setUserData}
+								setUid={setUid}
 							/>
 						</Animation>
 					)}
 					{isAuth && (
 						<Animation>
-							<CVChoice userData={userData} setCv={setCv} />
+							<CVChoice
+								userData={userData}
+								setCv={setCv}
+								uid={uid}
+							/>
 						</Animation>
 					)}
 					{isSignup && !isAuth && (
@@ -378,7 +385,7 @@ function Login({
 							<SignUp setIsAuth={setIsAuth} />
 						</Animation>
 					)}
-					{error && <p className="error">{error}</p>}
+					{error && <p className='error'>{error}</p>}
 				</Container>
 			</ThemeProvider>
 		</>

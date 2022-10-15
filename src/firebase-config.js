@@ -20,6 +20,8 @@ import {
 	getDocs,
 	where,
 	limit,
+	arrayUnion,
+	updateDoc,
 } from 'firebase/firestore';
 import { getDatabase, ref, set, query } from 'firebase/database';
 
@@ -78,6 +80,60 @@ export async function loadCVData(refDoc) {
 		console.log('loadCVData() result', mySnapshot.data());
 		return mySnapshot.data();
 	}
+}
+
+/**
+ * Crée un nouveau doc dans la collection headAndBody
+ * @param {number} uid identifiant de l'utilisateur
+ * @param {string} cvName nom du document cv
+ * @param {map} data données du cv
+ */
+export async function addNewDoc(uid, cvName, data) {
+	console.log('writeNewDoc uid', uid, 'cvName', cvName, 'data', data);
+
+	// création du doc dans la collection de cv headAndBody
+	const docRef = await addDoc(collection(db, 'headAndBody'), data);
+
+	// requête demandant si l'uid a déjà un doc de cvs dans 'CV Collection'
+	const cvCollection = query(
+		collection(db, 'CV Collection'),
+		where('userId', '==', uid)
+	);
+
+	const querySnapshot = await getDocs(cvCollection);
+
+	if (querySnapshot.docs === 0) {
+		// Si pas de doc dans la collection 'CV Collection'
+		const result = await addDoc(collection(db, 'CV Collection'), {
+			userId: uid,
+			cvs: [
+				{
+					path: docRef,
+				},
+			],
+		});
+		return result;
+	} else if (querySnapshot.docs > 1) {
+		// dimension du docs != 1
+		return null; // renvoie une erreur
+	}
+	// Si l'uid a un doc, on prend la liste des cvs
+	// on y ajoute le nouveau doc
+	updateDoc(
+		querySnapshot.docs[0].ref,
+		{
+			// userId: uid,
+			cvs: arrayUnion({
+				name: cvName,
+				path: docRef,
+			}),
+		},
+		{ merge: true }
+	)
+		.then((result) => {
+			console.log('Données sauvegardées' + result);
+		})
+		.catch((err) => console.error(err));
 }
 
 /**

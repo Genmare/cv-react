@@ -347,6 +347,137 @@ export const initialData = {
 	],
 };
 
+export const newData = {
+	head: {
+		name: 'nom',
+		occupation: 'Occupation - metier',
+	},
+	infos: {
+		infoDesc: [
+			{
+				id: 0,
+				icon: 'FaMapMarkerAlt',
+				text: 'adresse',
+			},
+			{
+				id: 1,
+				icon: 'FaMobileAlt',
+				text: 'numéro mobile',
+			},
+			{
+				id: 3,
+				icon: 'FaAt',
+				text: 'numéro fixe',
+			},
+			{
+				id: 4,
+				icon: 'FaUser',
+				text: 'âge',
+			},
+			{
+				id: 5,
+				icon: 'FaCarAlt',
+				text: 'permis',
+			},
+			{
+				id: 6,
+				icon: 'FaGithub',
+				text: 'adresse Github',
+			},
+		],
+		interests: [{ id: 0, int: 'Interêt' }],
+		languages: [
+			{ id: 0, language: 'anglais', level: 'lecture document technique' },
+			{ id: 1, language: 'espagnol', level: 'niveau usuel' },
+			{ id: 2, language: 'japonais', level: 'niveau découverte' },
+		],
+	},
+	photo: {
+		coord: { x: 0, y: 0 },
+		coordFrame: { x: 0, y: 16 },
+		dim: { height: 200, width: 200 },
+		isCirce: false,
+		zoom: 0.54,
+	},
+	body: [
+		// tableau racine
+		{
+			// section n°0
+			id: 0,
+			title: 'compétences professionnelles',
+			sentence: [
+				// ensemble de phrases avec leur titre
+				{
+					id: 1,
+					isEnum: true,
+					intitule: 'IDE',
+					iteration: ['Android Studio'],
+				},
+				{
+					id: 2,
+					isEnum: true,
+					intitule: 'Modeleur 3D',
+					iteration: ['Blender'],
+				},
+			],
+		},
+		{
+			id: 1,
+			title: 'formation',
+			sentence: [
+				{
+					id: 0,
+					isEnum: false,
+					intitule: '2016 – 2021 : MOOC ',
+					phrase: '(Java, Android, Kotlin, Angular, React Native, Node.js, JavaEE, PHP, HTML5, CSS3, JavaScript)',
+				},
+				{
+					id: 1,
+					isEnum: false,
+					intitule: '2006 : MASTER Pro ',
+					phrase: 'Université',
+				},
+				{
+					id: 2,
+					isEnum: false,
+					intitule: '2000 : Baccalauréat général scientifique',
+					phrase: 'Lycée ',
+				},
+			],
+		},
+		{
+			id: 2,
+			title: 'expérience professionnelle',
+			sentence: [
+				{
+					id: 0,
+					isEnum: false,
+					intitule: '2006 (avril – septembre) : Stagiaire à Paris',
+					phrase: '\nDescriptif : .',
+				},
+			],
+		},
+		{
+			id: 3,
+			title: 'loisirs - activités extra-professionnelles',
+			sentence: [
+				{
+					id: 0,
+					isEnum: true,
+					intitule: 'Sites et youtuber sur le web',
+					iteration: ['The Net Ninja'],
+				},
+				{
+					id: 1,
+					isEnum: true,
+					intitule: 'Lecture',
+					iteration: ['OpenGL Shading Language'],
+				},
+			],
+		},
+	],
+};
+
 export const reducer = (state, action) => {
 	console.log('\nreducer:', action);
 	switch (action.type) {
@@ -451,7 +582,7 @@ export const reducer = (state, action) => {
 					),
 				},
 			};
-		// settings section
+		// section settings
 		case 'addIter':
 			console.log('addIter', action);
 			return {

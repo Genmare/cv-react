@@ -17,7 +17,7 @@ import {
 	getUserCVCollection,
 } from '../../firebase-config';
 
-export const SignIn = ({ setIsAuth, setUserData }) => {
+export const SignIn = ({ setIsAuth, setUserData, setUid }) => {
 	const [emailValidate, setEmailValidate] = useState(true);
 	const [pwValidate, setPwValidate] = useState(true);
 	const [values, setValues] = React.useState({
@@ -86,6 +86,7 @@ export const SignIn = ({ setIsAuth, setUserData }) => {
 		loginWithEmailAndPassword(values.login, values.password)
 			.then((result) => {
 				setIsLoading(false);
+				setUid(result.user.uid);
 				getUserCVCollection(result.user.uid).then((cvs) => {
 					setUserData({
 						name: result.user.email,

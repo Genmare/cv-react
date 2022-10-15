@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useReducer } from 'react';
+import React, { useRef, useState, useEffect, useReducer, useContext } from 'react';
 import Sheet from './component/Sheet';
 import ToolBar from './component/ToolBar';
 
@@ -11,14 +11,18 @@ import { signOut } from './firebase-config';
 
 import { reducer } from './utils/reducer';
 
+import { StyleContext } from './utils/context';
+
+
 function App() {
 	const [isAuth, setIsAuth] = useState(false);
 
 	const [data, setData] = useState(null);
 
+	const { setglobalStyles, setIdent } = useContext(StyleContext);
+
 	const [dataReducer, dispatch] = useReducer(reducer, null);
 
-	const [home, setHome] = useState(false);
 	let isHome = false;
 
 	const [userData, setUserData] = useState({
@@ -153,12 +157,13 @@ function App() {
 	 */
 	const logout = () => {
 		isHome = true;
-		setHome(true);
 		window.sessionStorage.clear();
 		setData(null);
 		dispatch({ type: 'clear' });
 		setCv(null);
 		setIsAuth(false);
+		setIdent(null);
+		setglobalStyles([]);
 	};
 
 	// retourne le premier élément possedant la propriété
@@ -170,7 +175,8 @@ function App() {
 	// console.log('isAuth', isAuth, 'data', data);
 
 	return (
-		<StyleProvider>
+		// <StyleProvider>
+		<>
 			{isAuth && dataReducer ? (
 				// {data ? (
 				<MainContainer>
@@ -191,11 +197,12 @@ function App() {
 							componentRef={componentRef}
 							toHome={() => {
 								isHome = true;
-								setHome(true);
 								window.sessionStorage.clear();
 								setData(null);
 								dispatch({ type: 'clear' });
 								setCv(null);
+								setIdent(null);
+								setglobalStyles([]);
 							}}
 							logout={logout}
 						/>
@@ -213,7 +220,9 @@ function App() {
 					logout={logout}
 				/>
 			)}
-		</StyleProvider>
+			
+			</>
+		// </StyleProvider>
 	);
 }
 

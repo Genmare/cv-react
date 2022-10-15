@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { Box, TextField } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, TextField, FormControl } from '@mui/material';
 import Button from '@mui/material/Button';
 import List from '@mui/material/List';
 
@@ -7,16 +7,22 @@ import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
-import { useState } from 'react';
+
+import { addNewDoc } from '../../firebase-config';
+import { newData } from '../../utils/reducer';
+import Animation from '../../Widget/Animation';
 
 // const InputComponent = ({ inputRef, ...other }) => <div {...other} />;
 const InputComponent = React.forwardRef(({ inputRef, ...other }, ref) => (
-	<div {...other} ref={ref} />
+	<div
+		{...other}
+		ref={ref}
+	/>
 ));
 const OutlinedDiv = ({ children, label }) => {
 	return (
 		<TextField
-			variant="outlined"
+			variant='outlined'
 			label={label}
 			multiline
 			sx={{ cursor: 'pointer' }}
@@ -29,45 +35,60 @@ const OutlinedDiv = ({ children, label }) => {
 	);
 };
 
-function CVChoice({ userData, setCv }) {
-	// console.log('CVChoice', props);
-	// const cvs = props.cvs;
+function CVChoice({ userData, setCv, uid }) {
 	console.log('CVChoice cvs userData', userData);
 	const selectLabel = `Sauvegarde${userData.cvList.length > 1 ? 's' : ''}`;
 
 	const [indexCV, setIndexCV] = useState(null);
 
-	// function handleRowClick(index) {
-	// 	const reference = Object.values(userData.cvList[index])[0];
-	// 	console.log('handleRowClick cv:', reference);
-	// 	console.log(typeof reference);
-	// 	// setCv(userData.cvList[index]);
-	// 	// setCv(reference);
-	// 	setCvChoice(reference);
-	// }
+	const [isNewDoc, setIsNewDoc] = useState(false);
+	const [newDocName, setNewDocName] = useState('');
 
 	function handleOpenClick() {
-		const reference = Object.values(userData.cvList[indexCV])[0];
+		console.log(`userData.cvList[${indexCV}]`, userData.cvList[indexCV]);
+		console.log(`userData.cvList`, userData.cvList);
+		// const reference = Object.values(userData.cvList[indexCV].path)[0];
+		const reference = userData.cvList[indexCV].path;
 		console.log('handleRowClick cv:', reference);
 		setCv(reference);
 	}
 
+	function handleDeleteClick() {}
+
+	function handleNameChange(event) {
+		console.log('handlNameChange', event.target.value);
+		setNewDocName(event.target.value);
+	}
+
+	function handleNewDocSubmit() {
+		console.log(
+			'handleNewDocSubmit uid',
+			uid,
+			'newnewDocName',
+			newDocName,
+			'newData',
+			newData
+		);
+		addNewDoc(uid, newDocName, newData);
+		setIsNewDoc(false);
+	}
+
 	function RenderRow({ data, index }) {
-		const item = data;
 		return (
-			<ListItem key={index} disablePadding>
+			<ListItem
+				key={index}
+				disablePadding>
 				<ListItemButton
 					dense={true}
 					sx={{
 						m: 0,
 						p: 0,
 					}}
-					component="a"
+					component='a'
 					// onClick={() => handleRowClick(index)}
-					onClick={() => setIndexCV(index)}
-				>
+					onClick={() => setIndexCV(index)}>
 					<ListItemText
-						primary={item}
+						primary={data}
 						inset
 						sx={
 							index !== indexCV
@@ -117,47 +138,63 @@ function CVChoice({ userData, setCv }) {
 				bgcolor: 'background.paper',
 				color: 'text.secondary',
 				p: '0 0.3rem',
-			}}
-		>
+			}}>
 			{/* <h4>CVChoice</h4> */}
 			<Typography
-				variant="h5"
-				component="div"
-				sx={{ m: '0.7rem 0.5rem 0' }}
-			>
+				variant='h5'
+				component='div'
+				sx={{ m: '0.7rem 0.5rem 0' }}>
 				CVChoice
 			</Typography>
 			<Button
-				size="small"
-				color="inherit"
-				variant="outlined"
-				// onClick={() => toggleButton(true)}
-				// endIcon={<PersonAdd />}
+				size='small'
+				color='inherit'
+				variant='outlined'
+				onClick={() => setIsNewDoc(true)}
 				style={{ margin: '1em 0.5em' }}
-			>
+				disabled={isNewDoc}>
 				Nouveau CV
 			</Button>
-			{/* <div>
-				<FormControl sx={{ m: 1, minWidth: 120, maxWidth: 300 }}>
-					<InputLabel shrink>{selectLabel}</InputLabel>
-					<Select
-						multiple
-						native
-						value={personName}
-						onChange={handleChangeMultiple}
-						label={selectLabel}
-						inputProps={{
-							id: 'select-multiple-native',
-						}}
-					>
-						{names.map((name) => (
-							<option key={name} value={name}>
-								{name}
-							</option>
-						))}
-					</Select>
+			{isNewDoc && (
+				<FormControl
+					sx={{ width: '14ch' }}
+					variant='outlined'
+					size='small'>
+					<TextField
+						id='outlined-email'
+						size='small'
+						type={'text'}
+						value={newDocName}
+						onChange={handleNameChange}
+						label='Nom du nouveau document'
+					/>
 				</FormControl>
-			</div> */}
+			)}
+			{isNewDoc && (
+				<Animation>
+					<Box
+						display='flex'
+						alignItems='stretch'
+						padding={1}>
+						<Button
+							size='small'
+							color='inherit'
+							variant='outlined'
+							onClick={handleNewDocSubmit}
+							style={{ margin: '0.5em 0' }}>
+							Valider
+						</Button>
+						<Button
+							size='small'
+							color='inherit'
+							variant='outlined'
+							onClick={() => setIsNewDoc(false)}
+							style={{ margin: '0.5em 0' }}>
+							Annuler
+						</Button>
+					</Box>
+				</Animation>
+			)}
 			<OutlinedDiv label={selectLabel}>
 				{/* <FixedSizeList
 					height={names.length * itemSize}
@@ -186,7 +223,8 @@ function CVChoice({ userData, setCv }) {
 						))} */}
 					{userData.cvList.map((cv, index) => (
 						<RenderRow
-							data={Object.keys(cv)}
+							// data={Object.keys(cv)}
+							data={cv.name}
 							index={index}
 							key={index}
 						/>
@@ -195,14 +233,22 @@ function CVChoice({ userData, setCv }) {
 				{/* </FixedSizeList> */}
 			</OutlinedDiv>
 			<Button
-				size="small"
-				color="inherit"
-				variant="outlined"
+				size='small'
+				color='inherit'
+				variant='outlined'
 				onClick={handleOpenClick}
 				disabled={indexCV === null}
-				style={{ margin: '1em 0.5em' }}
-			>
+				style={{ margin: '1em 0.5em' }}>
 				Ouvrir CV
+			</Button>
+			<Button
+				size='small'
+				color='inherit'
+				variant='outlined'
+				onClick={handleDeleteClick}
+				disabled={indexCV === null}
+				style={{ margin: '1em 0.5em' }}>
+				Supprimer CV
 			</Button>
 		</Box>
 	);
