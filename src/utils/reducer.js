@@ -190,6 +190,14 @@ export const initialDataSave = {
 			],
 		},
 	],
+	bodySettings: {
+		title: {
+			backgroundColor: '#7d7d7d',
+		},
+		paragraph: {
+			backgroundColor: '#ffffff',
+		},
+	},
 };
 
 export const initialData = {
@@ -246,7 +254,7 @@ export const initialData = {
 		coord: { x: 0, y: 0 },
 		coordFrame: { x: 0, y: 16 },
 		dim: { height: 200, width: 200 },
-		isCirce: false,
+		isCircle: false,
 		zoom: 0.54,
 	},
 	body: [
@@ -396,7 +404,7 @@ export const newData = {
 		coord: { x: 0, y: 0 },
 		coordFrame: { x: 0, y: 16 },
 		dim: { height: 200, width: 200 },
-		isCirce: false,
+		isCircle: false,
 		zoom: 0.54,
 	},
 	body: [
@@ -476,6 +484,14 @@ export const newData = {
 			],
 		},
 	],
+	bodySettings: {
+		title: {
+			backgroundColor: '#7d7d7d',
+		},
+		paragraph: {
+			backgroundColor: '#ffffff',
+		},
+	},
 };
 
 export const reducer = (state, action) => {
@@ -565,11 +581,19 @@ export const reducer = (state, action) => {
 				state.infos[action.prop].findIndex(
 					(lang) => lang.id === action.id
 				) + 1;
-			state.infos[action.prop].splice(index, 0, {
+			let newInfos = [...state.infos[action.prop]];
+			newInfos.splice(index, 0, {
 				id: maxId,
 				...action.object,
 			});
-			return state;
+			return {
+				...state,
+				infos: {
+					...state.infos,
+					[action.prop]: newInfos,
+				},
+			};
+
 		case 'remove-language':
 		case 'remove-interest':
 			console.log('reducer - remove-language', action);
@@ -593,8 +617,9 @@ export const reducer = (state, action) => {
 							...section,
 							sentence: section.sentence.map((sent) => {
 								if (sent.id === action.idSentence) {
-									let newIter = sent.iteration;
+									let newIter = [...sent.iteration];
 									newIter.splice(action.index, 0, 'word');
+									console.log('addIten', 'newIter:', newIter);
 									return {
 										...sent,
 										iteration: newIter,
@@ -617,8 +642,36 @@ export const reducer = (state, action) => {
 							...section,
 							sentence: section.sentence.map((sent) => {
 								if (sent.id === action.idSentence) {
-									let newIter = sent.iteration;
+									let newIter = [...sent.iteration];
 									newIter.splice(action.index, 1);
+									return {
+										...sent,
+										iteration: newIter,
+									};
+								}
+								return sent;
+							}),
+						};
+					}
+					return section;
+				}),
+			};
+		case 'swap': // swap d'éléments lors d'un drag and drop
+			console.log('swap', action);
+			return {
+				...state,
+				body: state.body.map((section) => {
+					if (section.id === action.idSection) {
+						return {
+							...section,
+							sentence: section.sentence.map((sent) => {
+								if (sent.id === action.idSentence) {
+									let newIter = [...sent.iteration];
+
+									let element = newIter[action.index];
+									const temp = newIter[action.index2Swap];
+									newIter[action.index2Swap] = element;
+									newIter[action.index] = temp;
 									return {
 										...sent,
 										iteration: newIter,
@@ -638,24 +691,25 @@ export const reducer = (state, action) => {
 				body: state.body.map((section) => {
 					if (section.id === action.idSection) {
 						let newSentence;
-						const { oldValue, value, prop } = action;
+						const { value, prop } = action;
 
 						if (action.prop === 'iteration') {
 							console.log('iteration', action);
-
-							newSentence = section.sentence.map((sent) =>
-								sent.id === action.idSentence // Trouver la prop sentence
-									? {
-											...sent,
-											iteration: sent.iteration.map(
-												(iter) =>
-													iter === oldValue
-														? value
-														: iter // changer la valeur dans le tableau iteration
-											),
-									  }
-									: sent
-							);
+							newSentence = section.sentence.map((sent) => {
+								if (sent.id === action.idSentence) {
+									// Trouver la prop sentence
+									let newIter = sent.iteration.map(
+										(iter, index) =>
+											action.index === index
+												? value
+												: iter // changer la valeur dans le tableau iteration
+									);
+									return {
+										...sent,
+										iteration: newIter,
+									};
+								} else return sent;
+							});
 						} else {
 							newSentence = section.sentence.map((sent) =>
 								sent.id === action.idSentence

@@ -10,6 +10,8 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import Paper from '@mui/material/Paper';
 
+import ConfirmSave from './ConfirmSave';
+
 import '../App.css';
 
 // import { ColorPicker, createColor } from 'mui-color';
@@ -20,7 +22,6 @@ import { PopoverPicker } from '../Widget/PopoverPicker/PopoverPicker';
 import { StyleContext } from '../utils/context';
 
 import ReactToPrint from 'react-to-print';
-import Logout from './Connexion/Logout';
 
 import '../style/exemple_styles.css';
 
@@ -30,7 +31,22 @@ import Animation from '../Widget/Animation';
 // import Files from 'react-files';
 // import { useFilePicker } from 'use-file-picker';
 
-import { writeDataWithRef } from '../firebase-config';
+import {
+	getImageUrl,
+	getImageUrlFromUidDirectory,
+	uploadImage,
+	getImageUrlFromCollection,
+	writeDataWithRef,
+	uploadImageToCollection,
+} from '../firebase-config';
+import {
+	Home,
+	LogoutTwoTone,
+	PictureAsPdfTwoTone,
+	AddAPhotoTwoTone,
+} from '@mui/icons-material';
+import { Button, IconButton, Tooltip } from '@mui/material';
+import Gallery from './Gallery';
 
 const theme = createTheme({
 	palette: {
@@ -69,34 +85,32 @@ const CustomSlider = styled(Slider)({
 	},
 });
 
-const MyCustomCheckbox = ({ width, elevation, onChange, label, checked }) => {
-	return (
-		<Paper elevation={elevation}>
-			<FormGroup>
-				<FormControlLabel
-					sx={{
-						p: '0.5em 1em',
-						m: '0.5em 0',
-						bgcolor: 'background.default',
-						display: 'grid',
-						fontWeight: '1200',
-						gridTemplateColumns: {
-							md: `1fr ${width}px`,
-						},
-					}}
-					control={
-						<Checkbox
-							checked={checked}
-							onChange={onChange}
-							sx={{ '& .MuiSvgIcon-root': { fontSize: 22 } }}
-						/>
-					}
-					label={label}
-				/>
-			</FormGroup>
-		</Paper>
-	);
-};
+const MyCustomCheckbox = ({ width, elevation, onChange, label, checked }) => (
+	<Paper elevation={elevation}>
+		<FormGroup>
+			<FormControlLabel
+				sx={{
+					p: '0.5em 1em',
+					m: '0.5em 0',
+					bgcolor: 'background.default',
+					display: 'grid',
+					fontWeight: '1200',
+					gridTemplateColumns: {
+						md: `1fr ${width}px`,
+					},
+				}}
+				control={
+					<Checkbox
+						checked={checked}
+						onChange={onChange}
+						sx={{ '& .MuiSvgIcon-root': { fontSize: 22 } }}
+					/>
+				}
+				label={label}
+			/>
+		</FormGroup>
+	</Paper>
+);
 
 const MyPaperTitleSlider = styled(Paper)({
 	padding: '1em',
@@ -125,10 +139,19 @@ const MyPaperSlider = styled(Paper)({
 	justifyItems: 'center',
 });
 
-// const successVars = {
-// 	'--color': '#4caf50',
-// 	'--box-shadow': 'rgb(76, 175, 80, .16)',
-// };
+const MyPhotoPaper = styled(Paper)({
+	padding: '0.5em 1em',
+	margin: '0.5em 0',
+	backgroundColor: 'background.default',
+	display: 'grid',
+	gridTemplateColumns: {
+		md: `1fr 200px`,
+	},
+	gap: 2,
+	justifyItems: 'center',
+	alignItems: 'center',
+	fontWeight: '1200',
+});
 
 const defaultVars = {
 	'--color': '#1976d2',
@@ -158,6 +181,7 @@ const Container = styled('div')({
 	padding: '0.5em',
 	background: 'rgb(245,245,245, 0.5)',
 	zIndex: '30',
+	overflow: 'auto',
 	// background: `repeating-linear-gradient(
 	// 	45deg,
 	// 	transparent,
@@ -184,27 +208,6 @@ const WidgetContener = styled(Paper)({
 	},
 });
 
-const noop = () => {};
-
-const FileInput = ({ value, onChange = noop, ...rest }) => (
-	<div>
-		{Boolean(value.length) && (
-			<div>Selected files: {value.map((f) => f.name).join(', ')}</div>
-		)}
-		<label>
-			Click to select some files...
-			<input
-				{...rest}
-				style={{ display: 'none' }}
-				type="file"
-				onChange={(e) => {
-					onChange([...e.target.files]);
-				}}
-			/>
-		</label>
-	</div>
-);
-
 export default function ToolBar({
 	// color,
 	// changeBgColor,
@@ -215,37 +218,53 @@ export default function ToolBar({
 	componentRef,
 	toHome,
 }) {
-	const [vars, setVars] = useState(defaultVars);
+	// detect si une ou plusieurs données ont été changés
+	let isChanged = false;
 
-	// const [openFileSelector, { filesContent, loading, errors }] = useFilePicker(
-	// 	{
-	// 		readAs: 'DataURL',
-	// 		accept: 'image/*',
-	// 		multiple: false,
-	// 		limitFilesConfig: { max: 1 },
-	// 		// minFileSize: 0.1, // in megabytes
-	// 		maxFileSize: 50,
-	// 		imageSizeRestrictions: {
-	// 			maxHeight: 900, // in pixels
-	// 			maxWidth: 1600,
-	// 			minHeight: 600,
-	// 			minWidth: 768,
-	// 		},
-	// 	}
-	// );
+	const noop = () => {};
 
-	const changeSrc = (e) => {
-		console.log('changeSrc', e);
-		// let photoComponent = globalStyles.find(
-		// 	(component) => component.id === 'Photo'
-		// );
-		// photoComponent.src = imageList[0].file.name;
-		// let arrayWithoutMyComponent = globalStyles.filter(
-		// 	(component) => component.id !== ident
-		// );
-		// console.log('ToolBar changeSrc, imageList[0]:', photoComponent.src);
-		// console.log('ToolBar changeSrc, imageList', imageList);
-		// setglobalStyles([...arrayWithoutMyComponent, photoComponent]);
+	// const FileInput = ({ value, onChange = noop, ...rest }) => (
+	const FileInput = ({ onChange = noop }) => (
+		<IconButton
+			aria-label="charger une image	"
+			component="label"
+			// onClick={logout}
+			// sx={{
+			// 	border: 'solid',
+			// 	color: 'white',
+			// 	backgroundColor: '#67b9e5',
+			// }}
+		>
+			<input
+				accept="image/*"
+				type="file"
+				style={{ display: 'none' }}
+				onChange={(e) => {
+					getBase64(e, onChange);
+					console.log('FileInput e', e);
+					// onChange([...e.target.files]);
+					// onChange(e);
+					console.log('FileInput changeSrc', 'e', e);
+				}}
+			/>
+			<AddAPhotoTwoTone />
+		</IconButton>
+	);
+
+	const [imgInputFile, setImgInputFile] = useState(null);
+
+	const getBase64 = (e, onChange) => {
+		let file = e.target.files[0];
+		setImgInputFile(file); // enregistre le fichier du pc pour pouvoir evantuellement l'enregistrer plus tard
+		let reader = new FileReader();
+		reader.readAsDataURL(file);
+		reader.onload = () => {
+			console.log('getBase64 reader.result', reader.result);
+			onChange(reader.result);
+		};
+		reader.onerror = function (error) {
+			console.log('Error: ', error);
+		};
 	};
 
 	const changeData = ({
@@ -278,6 +297,8 @@ export default function ToolBar({
 		console.log(`\nchangeData ${prop} globalStyles`, globalStyles);
 		console.log(`changeData ${prop}`, component[prop], input);
 		setglobalStyles([...arrayWithoutMyComponent, component]);
+
+		isChanged = true;
 	};
 
 	const changeBackgroundColor = (value) =>
@@ -300,6 +321,16 @@ export default function ToolBar({
 			prop: 'zoom',
 			isEvent: true,
 		});
+
+	const changeSrc = (event) => {
+		// console.log('changeSrc event', event);
+		// getBase64(event);
+		changeData({
+			input: event,
+			prop: 'src',
+			isEvent: false,
+		});
+	};
 
 	const changeDim = (dimLen, e) => {
 		let photoComponent = globalStyles.find(
@@ -324,6 +355,8 @@ export default function ToolBar({
 			(component) => component.id !== ident
 		);
 		setglobalStyles([...arrayWithoutMyComponent, photoComponent]);
+
+		isChanged = true;
 	};
 
 	const changeCoordValue = (axis, e, coordProp) => {
@@ -351,6 +384,8 @@ export default function ToolBar({
 			(component) => component.id !== ident
 		);
 		setglobalStyles([...arrayWithoutMyComponent, photoComponent]);
+
+		isChanged = true;
 	};
 
 	const changeCoord = (axis, e) => {
@@ -363,55 +398,108 @@ export default function ToolBar({
 
 	const { globalStyles, setglobalStyles, ident } = useContext(StyleContext);
 
-	// function Example() {
-	// 	const [showButton, setShowButton] = useState(true);
-	// 	const [showMessage, setShowMessage] = useState(false);
-	// 	return (
-	// 		<Container style={{ paddingTop: '2rem' }}>
-	// 			{showButton && (
-	// 				<button onClick={() => setShowMessage(true)} size="lg">
-	// 					Show Message
-	// 				</button>
-	// 			)}
-	// 			<CSSTransition
-	// 				in={showMessage}
-	// 				timeout={300}
-	// 				classNames="alert"
-	// 				// classNames={{
-	// 				// 	enterActive: styles.popEnterActive,
-	// 				// 	enterDone: styles.popEnter,
-	// 				// 	exitActive: styles.popExit,
-	// 				// 	exitDone: styles.popExitActive,
-	// 				// }}
-	// 				// classNames={{ ...styles }}
-	// 				unmountOnExit
-	// 				onEnter={() => setShowButton(false)}
-	// 				onExited={() => setShowButton(true)}
-	// 			>
-	// 				<p>
-	// 					This alert message is being transitioned in and out of
-	// 					the DOM.
-	// 				</p>
-	// 			</CSSTransition>
-	// 		</Container>
-	// 	);
-	// }
-
 	const elevation = 1; // pour le composant Paper de mui
+
+	const saveData = (docRef, data) => {
+		// if (isChanged) writeDataWithRef(docRef, data);
+		writeDataWithRef(docRef, data);
+	};
+
+	const toolbarbtnStyle = {
+		// backgroundColor: 'black',
+		marginBottom: '20px',
+		display: 'flex',
+		// flexDirection: 'column',
+
+		// alignItems: 'flex-start',
+		// justifyContent: 'center',
+
+		// height: '100%',
+	};
+
+	const [imgPaths, setImgPaths] = useState([]);
+
+	const loadPhotoGallery = () => {
+		setImgPaths([]);
+		getImageUrlFromCollection().then((photoList) => {
+			console.log('loadPhotoGallery, photoList:', photoList);
+			console.log('loadPhotoGallery, imgPaths', imgPaths);
+			// setImgPaths((prevState) => [...prevState, ...photoList]);
+			photoList = photoList.sort((photoA, photoB) => {
+				console.log(
+					'loadPhotoGallery photoA.timestamp',
+					photoA.timestamp,
+					'photoB.timestamp',
+					photoB.timestamp,
+					photoA.timestamp < photoB.timestamp ? 0 : 1
+				);
+				return photoB.timestamp - photoA.timestamp;
+			});
+			console.log('loadPhotoGallery, après sort photoList:', photoList);
+			setImgPaths(photoList);
+		});
+		// getImageUrlFromUidDirectory((imgPath, name) => {
+		// 	console.log('getImageUrl imgPath', imgPath);
+		// 	setImgPaths((prevState) => [
+		// 		...prevState,
+		// 		{
+		// 			img: imgPath,
+		// 			title: name,
+		// 		},
+		// 	]);
+		// });
+	};
 
 	return (
 		// <div style={{ position: 'sticky', top: '0px', height: '10000px' }}>
 		<Container>
-			<div className="toolbarbtn" style={{ marginBottom: '20px' }}>
-				<button onClick={toHome}>Home</button>
-				<Logout logout={logout} />
-				<button onClick={() => writeDataWithRef(id_doc, data)}>
-					Sauvegarder
-				</button>
-
+			<div className="toolbarbtn" style={toolbarbtnStyle}>
+				<Tooltip title="Page d'Accueil">
+					<IconButton
+						onClick={toHome}
+						sx={{
+							border: 'solid',
+							color: 'white',
+							backgroundColor: '#67b9e5',
+						}}
+					>
+						<Home />
+					</IconButton>
+				</Tooltip>
+				<ConfirmSave
+					buttonLabel={'Sauvegarder'}
+					query={'Voulez-vous faire une sauvegarde:'}
+					// onConfirm={() => console.log(id_doc, data)}
+					onConfirm={() => saveData(id_doc, data)}
+				/>
+				{/* <Logout logout={logout} /> */}
+				<Tooltip title="Se déconnecter">
+					<IconButton
+						onClick={logout}
+						sx={{
+							border: 'solid',
+							color: 'white',
+							backgroundColor: '#67b9e5',
+						}}
+					>
+						<LogoutTwoTone />
+					</IconButton>
+				</Tooltip>
 				<ReactToPrint
 					content={() => componentRef.current}
-					trigger={() => <button>PDF</button>}
+					trigger={() => (
+						<Tooltip title="Exporter en PDF">
+							<IconButton
+								sx={{
+									border: 'solid',
+									color: 'white',
+									backgroundColor: '#67b9e5',
+								}}
+							>
+								<PictureAsPdfTwoTone />
+							</IconButton>
+						</Tooltip>
+					)}
 				/>
 			</div>
 			{globalStyles.map((component) => {
@@ -454,11 +542,50 @@ export default function ToolBar({
 									);
 								case 'src':
 									return (
-										<FileInput
-											value=""
-											onChange={changeSrc}
+										<MyPhotoPaper
+											elevation={elevation}
 											key={index}
-										/>
+										>
+											<FileInput
+												value=""
+												onChange={changeSrc}
+												key={index}
+											/>
+											<span>Charger une photo</span>
+											<Button
+												// disabled={
+												// 	!data ||
+												// 	!data.photo
+												// 		?.photoCollection ||
+												// 	data.photo?.photoCollection
+												// 		.length === 0
+												// }
+												onClick={loadPhotoGallery}
+											>
+												Photothèque
+											</Button>
+											{imgPaths.length > 0 && (
+												<Gallery
+													// imgData={imgPaths}
+													photoList={imgPaths}
+													onClick={changeSrc}
+												/>
+											)}
+											<Button
+												onClick={() => {
+													// uploadImage(
+													// 	imgInputFile,
+													// 	loadPhotoGallery
+													// );
+													uploadImageToCollection(
+														imgInputFile,
+														loadPhotoGallery
+													);
+												}}
+											>
+												Sauver une image
+											</Button>
+										</MyPhotoPaper>
 									);
 								case 'isCircle':
 									return (
@@ -659,7 +786,12 @@ export default function ToolBar({
 										</MyPaperTitleSlider>
 									);
 								default:
-								// return <div key={index}></div>;
+									return (
+										<div
+											key={index}
+											style={{ display: 'none' }}
+										></div>
+									);
 							}
 						});
 				}

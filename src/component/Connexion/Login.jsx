@@ -25,6 +25,7 @@ import { Box, Divider } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { useEffect } from 'react';
+import { useRef } from 'react';
 
 const Container = styled.div`
 	/* margin: auto;
@@ -166,49 +167,43 @@ function Login({
 	userData,
 	setUserData,
 	logout,
+	uid,
+	setUid,
 }) {
 	const [isSignin, setIsSignin] = useState(false);
 	const [isSignup, setIsSignup] = useState(false);
-	// const [isAuth, setIsAuth] = useState(false);
 	const [error, setError] = useState(null);
-
-	const [uid, setUid] = useState('');
-
-	// const [userData, setUserData] = useState({
-	// 	name: '',
-	// 	cvList: [],
-	// });
-	// const [cv, setCv] = useState(null);
-
-	const [userConnected, setUserConnected] = useState(null);
+	const cvAnchor = useRef(null);
 
 	useEffect(() => {
 		console.log('Login useEffect, cv', cv);
-		if (!isAuth) {
-			getUser((user) => {
-				console.log('getUser');
-				if (user && !cv) {
-					console.log('Login userEffect user', user);
-					setUserConnected(user);
-					getUserCVCollection(user.uid)
-						.then((cvs) => {
-							setUserData({
-								name: user.email,
-								cvList: cvs,
-							});
-							setIsAuth(true);
-						})
-						.catch((error) => {
-							const errorMsg = `Connection a l'utilisateur ${user} impossible: ${error}`;
-							setError(errorMsg);
-							console.error(errorMsg);
-						});
-				} else {
-					const errorMsg = `onAuthStateChanged User, aucun utilisateur connecté`;
-					console.error(errorMsg);
-				}
-			});
-		}
+		console.log('Login', 'uid:', uid);
+		// if (!isAuth) {
+		// 	getUser((user) => {
+		// 		console.log('Login', 'getUser, uid:', uid);
+		// 		console.log('Login', 'getUser user:', user, 'cv:', cv);
+		// 		if (user && !cv) {
+		// 			console.log('Login userEffect user', user);
+		// 			// setUserConnected(user);
+		// 			getUserCVCollection(user.uid)
+		// 				.then((cvs) => {
+		// 					setUserData({
+		// 						name: user.email,
+		// 						cvList: cvs,
+		// 					});
+		// 					setIsAuth(true);
+		// 				})
+		// 				.catch((error) => {
+		// 					const errorMsg = `Connection a l'utilisateur ${user.uid} impossible: ${error}`;
+		// 					setError(errorMsg);
+		// 					console.error(errorMsg);
+		// 				});
+		// 		} else {
+		// 			const errorMsg = `onAuthStateChanged User, aucun utilisateur connecté`;
+		// 			console.warn(errorMsg);
+		// 		}
+		// 	});
+		// }
 		console.log('Login cv', cv);
 		if (cv) {
 			getDataFromRef(cv)
@@ -224,15 +219,22 @@ function Login({
 		}
 
 		// désactive les boutons Signin/Signup
-		if (isAuth === false) {
+		if (!isAuth) {
 			setIsSignin(false);
 			setIsSignup(false);
 		}
 
+		// scroll sur le composant cvChoice
+		if (cvAnchor.current && isAuth) {
+			console.log('Login', 'cvAnchor:', cvAnchor);
+			cvAnchor.current.scrollIntoView({ behavior: 'smooth' });
+		}
+
 		return () => {
-			console.log('Login closed');
+			console.warn('Login closed');
 		};
-	}, [cv, userConnected, isAuth]);
+	}, [cv, isAuth]);
+	// }, [cv, userConnected, isAuth]);
 
 	const signInWithGithub = () => {
 		isSignup && setIsSignup(false);
@@ -248,7 +250,7 @@ function Login({
 				// The signed-in user info.
 				const user = result.user;
 
-				sessionStorage.setItem('isAuth', true);
+				// sessionStorage.setItem('isAuth', true);
 				console.log(result);
 				setIsAuth(true);
 			})
@@ -290,15 +292,10 @@ function Login({
 			<ThemeProvider theme={themeOptions}>
 				<Container>
 					{isAuth && (
-						<NavBar
-							logName={userData.name}
-							logout={logout}
-						/>
+						<NavBar logName={userData.name} logout={logout} />
 					)}
 					{/* <Typography variant="h3" mb={2} style={{ fontWeight: 600 }}> */}
-					<Typography
-						variant='h3'
-						style={{ fontWeight: 600 }}>
+					<Typography variant="h3" style={{ fontWeight: 600 }}>
 						CV MAKER
 					</Typography>
 					<Box
@@ -321,43 +318,47 @@ function Login({
 							'& hr': {
 								// mx: 0.5,
 							},
-						}}>
+						}}
+					>
 						<Div>
 							<Button
-								size='small'
-								color='inherit'
-								variant='outlined'
+								size="small"
+								color="inherit"
+								variant="outlined"
 								onClick={() => toggleButton(true)}
 								// endIcon={<PersonAdd />}
 								endIcon={<MailIcon />}
 								style={{ margin: '1em 0.5em' }}
-								disabled={isAuth}>
+								disabled={isAuth}
+							>
 								connexion
 							</Button>
 							<Button
 								// className="Button"
-								size='small'
-								color='inherit'
-								variant='outlined'
-								endIcon={<GitHubIcon fontSize='large' />}
+								size="small"
+								color="inherit"
+								variant="outlined"
+								endIcon={<GitHubIcon fontSize="large" />}
 								style={{ margin: '1em 0.5em' }}
 								onClick={signInWithGithub}
-								disabled={isAuth}>
+								disabled={isAuth}
+							>
 								Connexion
 							</Button>
 							<Divider
-								orientation='vertical'
-								variant='middle'
+								orientation="vertical"
+								variant="middle"
 								flexItem
 							/>
 							<Button
-								size='small'
-								color='inherit'
-								variant='outlined'
+								size="small"
+								color="inherit"
+								variant="outlined"
 								onClick={() => toggleButton(false)}
 								endIcon={<PersonAddIcon />}
 								style={{ margin: '1em 0.5em' }}
-								disabled={isAuth}>
+								disabled={isAuth}
+							>
 								S'inscrire
 							</Button>
 						</Div>
@@ -374,7 +375,9 @@ function Login({
 					{isAuth && (
 						<Animation>
 							<CVChoice
+								ref={cvAnchor}
 								userData={userData}
+								setUserData={setUserData}
 								setCv={setCv}
 								uid={uid}
 							/>
@@ -385,7 +388,7 @@ function Login({
 							<SignUp setIsAuth={setIsAuth} />
 						</Animation>
 					)}
-					{error && <p className='error'>{error}</p>}
+					{error && <p className="error">{error}</p>}
 				</Container>
 			</ThemeProvider>
 		</>

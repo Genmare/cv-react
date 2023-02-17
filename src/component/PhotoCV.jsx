@@ -1,8 +1,11 @@
 import React, { useContext } from 'react';
+import { useEffect } from 'react';
+import { useState } from 'react';
 import styled from 'styled-components';
+import { cvDefaultName, getImageUrl } from '../firebase-config';
 
 // import photoCV from '../data/cv.bmp';
-import photoCV from '../data/cv-max.bmp';
+import defaultPhotoCV from '../data/cv-max.bmp';
 // import photoCV from '../data/photoCV2019-2.jpg';
 // import photoCV from '../data/photoCV2019-2-min.jpg';
 
@@ -56,16 +59,25 @@ const Photo = styled.img`
 `;
 
 export default function PhotoCV({ photo, dispatch }) {
-	// const [photo, setPhoto] = useState(photoCV);
-	console.log('PhotoCV', photo);
-	console.log('photo.isCircle', photo.isCircle, 'photo.zoom', photo.zoom);
+	// console.log('PhotoCV', photo);
+	// console.log('photo.isCircle', photo.isCircle, 'photo.zoom', photo.zoom);
 
 	const { globalStyles, setglobalStyles, setIdent } =
 		useContext(StyleContext);
 
+	const [photoCV, setPhotoCV] = useState(defaultPhotoCV);
+
+	useEffect(() => {
+		// télécharger la photo du cv
+		getImageUrl(cvDefaultName, (url) => {
+			console.log('PhotoCV url', url);
+			setPhotoCV(url);
+		});
+	}, [photoCV]);
+
 	let cfStyles = {
 		id: 'Photo',
-		src: photoCV,
+		src: photo.src || photoCV,
 		isCircle: photo.isCircle || false,
 		dim: {
 			width: photo.dim.width || 200,

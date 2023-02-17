@@ -20,7 +20,16 @@ function Remove() {
 	);
 }
 
-function Hover({ children, isBlock, addClick, removeClick }) {
+function Hover({
+	children,
+	isBlock,
+	addClick,
+	removeClick,
+	isDraggle = false,
+	onDragStart,
+	onDragEnter,
+	onDragEnd,
+}) {
 	const [hover, setHover] = useState(false);
 
 	return isBlock ? (
@@ -46,6 +55,14 @@ function Hover({ children, isBlock, addClick, removeClick }) {
 			className={styles.hoverBlock}
 			onMouseEnter={() => setHover(true)}
 			onMouseLeave={() => setHover(false)}
+			draggable={isDraggle}
+			onDragStart={(e) => {
+				console.log('Hover span drag', e);
+				console.log('Hover span drag handleDragStart', onDragStart);
+				onDragStart(e);
+			}}
+			onDragEnter={onDragEnter}
+			onDragEnd={onDragEnd}
 		>
 			{hover && (
 				<span onClick={addClick}>

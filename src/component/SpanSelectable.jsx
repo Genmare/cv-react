@@ -19,10 +19,6 @@ const Input = styled.input`
 	/* width: auto; */
 `;
 
-{
-	/* <span class="input" role="textbox" contenteditable></span> */
-}
-
 export default function SpanSelectable({
 	value,
 	fontSize,

@@ -1,18 +1,23 @@
-import React, { useRef, useState, useEffect, useReducer, useContext } from 'react';
+import React, {
+	useRef,
+	useState,
+	useEffect,
+	useReducer,
+	useContext,
+} from 'react';
 import Sheet from './component/Sheet';
 import ToolBar from './component/ToolBar';
 
 import './App.css';
 import Login from './component/Connexion/Login';
 
-import { StyleProvider } from './utils/context';
+// import { StyleProvider } from './utils/context';
 import MainContainer from './component/MainContainer';
-import { signOut } from './firebase-config';
+import { getUser, isAuthenticated, signOut } from './firebase-config';
 
 import { reducer } from './utils/reducer';
 
 import { StyleContext } from './utils/context';
-
 
 function App() {
 	const [isAuth, setIsAuth] = useState(false);
@@ -30,11 +35,14 @@ function App() {
 		cvList: [],
 	});
 
+	const [uid, setUid] = useState('');
+
 	// identifient du doc cv
 	const [cv, setCv] = useState(null);
 
 	useEffect(() => {
 		console.log('useEffect dataReducer', dataReducer);
+		isAuthenticated('App');
 
 		window.onbeforeunload = (event) => {
 			const e = event || window.event;
@@ -48,7 +56,14 @@ function App() {
 			return undefined;
 		};
 
-		let dataStorage = null;
+		// En cas de recharge de la page l'uid peut être réinitialisé
+		if (isAuth && uid === '') {
+			// réaffectation de l'uid
+			getUser((user) => setUid(user.uid));
+		}
+
+		let dataStorage = null; // données stockées dans le cache
+
 		if (data === null) {
 			dataStorage = sessionStorage.getItem('data');
 			console.log('dataStorage', dataStorage);
@@ -59,7 +74,6 @@ function App() {
 		} else {
 			dataStorage = dataReducer ?? data;
 
-			// console.log(`sessionStorage.setItem('data', ${dataReducer})`);
 			console.log(`sessionStorage.setItem('data', ${dataStorage})`);
 			if (!dataReducer) dispatch({ type: 'reset', data });
 			sessionStorage.setItem('data', JSON.stringify(dataStorage));
@@ -79,7 +93,7 @@ function App() {
 				}
 			} else {
 				console.log('This page is not reloaded');
-				sessionStorage.clear();
+				sessionStorage.removeItem('data');
 				signOut()
 					.then(() => {
 						console.log("Déconnexion de l'utilisateur");
@@ -90,8 +104,9 @@ function App() {
 						console.log('Déconnexion inpossible:', error)
 					);
 			}
+			console.warn('App closed');
 		};
-	}, [isAuth, dataReducer, data]);
+	}, [isAuth, data, isHome]);
 
 	const [color, setColor] = useState('white');
 
@@ -157,7 +172,7 @@ function App() {
 	 */
 	const logout = () => {
 		isHome = true;
-		window.sessionStorage.clear();
+		window.sessionStorage.removeItem('data');
 		setData(null);
 		dispatch({ type: 'clear' });
 		setCv(null);
@@ -197,7 +212,7 @@ function App() {
 							componentRef={componentRef}
 							toHome={() => {
 								isHome = true;
-								window.sessionStorage.clear();
+								window.sessionStorage.removeItem('data');
 								setData(null);
 								dispatch({ type: 'clear' });
 								setCv(null);
@@ -218,10 +233,11 @@ function App() {
 					userData={userData}
 					setUserData={setUserData}
 					logout={logout}
+					uid={uid}
+					setUid={setUid}
 				/>
 			)}
-			
-			</>
+		</>
 		// </StyleProvider>
 	);
 }

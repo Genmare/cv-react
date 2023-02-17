@@ -65,6 +65,47 @@ export default function Section({
 		return tools.getFontColor(cfStyle);
 	};
 
+	const dragItem = useRef();
+	const dragStart = (e, position) => {
+		console.log('Section, dragStart', e, 'position', position);
+		dragItem.current = position;
+		console.log(e.target.innerHTML);
+	};
+
+	const dragOverItem = useRef();
+	const dragEnter = (e, position) => {
+		console.log('Section, dragEnter', e, 'position', position);
+		dragOverItem.current = position;
+		console.log(e.target.innerHTML);
+	};
+
+	const drop = (e, idSection, idSentence, index) => {
+		console.log('Section, dragEnd');
+		// const copyListItems = [...list];
+		// const dragItemContent = copyListItems[dragItem.current];
+		// copyListItems.splice(dragItem.current, 1);
+		// copyListItems.splice(dragOverItem.current, 0, dragItemContent);
+
+		// drop(
+		// 	e,
+		// 	idSection,
+		// 	categorie.iteration,
+		// 	index
+		// )
+
+		dispatch({
+			type: 'swap',
+			idSection,
+			idSentence,
+			index,
+			index2Swap: dragOverItem.current,
+		});
+
+		dragItem.current = null;
+		dragOverItem.current = null;
+		// setList(copyListItems);
+	};
+
 	// Taille des fonts SpanSelectable en 'em'
 	const fontS = '1';
 
@@ -100,7 +141,7 @@ export default function Section({
 										: 'phrase no-margin'
 								}
 							>
-								<SpanSelectable
+								<SpanSelectable // Composant intitulé
 									value={categorie.intitule}
 									endChar={':'}
 									onSubmit={(value) =>
@@ -110,18 +151,16 @@ export default function Section({
 											idSentence: categorie.id,
 											prop: 'intitule',
 											value,
-											oldValue: categorie.intitule,
+											// oldValue: categorie.intitule,
 										})
 									}
 								/>
-								{categorie.isEnum ? (
+								{categorie.isEnum ? ( // Liste d'item
 									categorie.iteration.map((iter, index) => {
 										if (
 											index <
 											categorie.iteration.length - 1
 										) {
-											// if (categorie.intitule === 'IDE')
-											// 	console.log(`	${iter}`);
 											return (
 												<Hover
 													key={index}
@@ -144,6 +183,25 @@ export default function Section({
 															index,
 														})
 													}
+													onDragStart={(e) => {
+														console.log(
+															'Section drag handleDragStart',
+															e
+														);
+														dragStart(e, index);
+													}}
+													onDragEnter={(e) =>
+														dragEnter(e, index)
+													}
+													onDragEnd={(e) =>
+														drop(
+															e,
+															idSection,
+															categorie.id,
+															index
+														)
+													}
+													isDraggle={true}
 												>
 													<SpanSelectable
 														value={iter}
@@ -158,15 +216,13 @@ export default function Section({
 																	categorie.id,
 																prop: 'iteration',
 																value,
-																oldValue: iter,
+																index,
 															})
 														}
 													/>
 												</Hover>
 											);
 										} else {
-											// if (categorie.intitule === 'IDE')
-											// 	console.log(`	${iter}`);
 											return (
 												<Hover
 													key={index}
@@ -189,6 +245,25 @@ export default function Section({
 															index,
 														})
 													}
+													onDragStart={(e) => {
+														console.log(
+															'Section drag handleDragStart',
+															e
+														);
+														dragStart(e, index);
+													}}
+													onDragEnter={(e) =>
+														dragEnter(e, index)
+													}
+													onDragEnd={(e) =>
+														drop(
+															e,
+															idSection,
+															categorie.id,
+															index
+														)
+													}
+													isDraggle={true}
 												>
 													<SpanSelectable
 														key={index}
@@ -203,7 +278,7 @@ export default function Section({
 																	categorie.id,
 																prop: 'iteration',
 																value,
-																oldValue: iter,
+																index,
 															})
 														}
 													/>
@@ -223,7 +298,7 @@ export default function Section({
 												idSentence: categorie.id,
 												prop: 'phrase',
 												value,
-												oldValue: categorie.phrase,
+												// oldValue: categorie.phrase,
 											})
 										}
 									/>

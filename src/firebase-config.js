@@ -12,20 +12,35 @@ import {
 } from 'firebase/auth';
 import {
 	addDoc,
+	deleteDoc,
 	getFirestore,
 	doc,
 	setDoc,
 	collection,
+	FieldValue,
 	getDoc,
 	getDocs,
 	where,
 	limit,
+	query,
 	arrayUnion,
+	arrayRemove,
 	updateDoc,
+	serverTimestamp,
+	Timestamp,
 } from 'firebase/firestore';
-import { getDatabase, ref, set, query } from 'firebase/database';
+import {
+	getDownloadURL,
+	getStorage,
+	listAll,
+	ref,
+	uploadBytes,
+} from 'firebase/storage';
+// import { getDatabase, ref, set } from 'firebase/database';
 
 import dataDoe from './data/data copy.json';
+import { isContentEditable } from '@testing-library/user-event/dist/utils';
+import Photo from './model/Photo';
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -82,29 +97,49 @@ export async function loadCVData(refDoc) {
 	}
 }
 
-/**
- * Crée un nouveau doc dans la collection headAndBody
- * @param {number} uid identifiant de l'utilisateur
- * @param {string} cvName nom du document cv
- * @param {map} data données du cv
- */
-export async function addNewDoc(uid, cvName, data) {
-	console.log('writeNewDoc uid', uid, 'cvName', cvName, 'data', data);
+function getCvCollection() {
+	uid = auth.currentUser.uid;
 
-	// création du doc dans la collection de cv headAndBody
-	const docRef = await addDoc(collection(db, 'headAndBody'), data);
-
-	// requête demandant si l'uid a déjà un doc de cvs dans 'CV Collection'
 	const cvCollection = query(
 		collection(db, 'CV Collection'),
 		where('userId', '==', uid)
 	);
 
-	const querySnapshot = await getDocs(cvCollection);
+	return cvCollection;
+}
 
-	if (querySnapshot.docs === 0) {
+/**
+ * Crée un nouveau doc dans la collection headAndBody
+ * @param {number} uid identifiant de l'utilisateur
+ * @param {string} cvName nom du document cv
+ * @param {map} data données du cv
+ * @returns {DocumentReference<map> | null} renvoie une Promise de la docRef ou null
+ */
+export async function addNewDoc(uid, cvName, data) {
+	console.log('addNewDoc uid', uid, 'cvName', cvName, 'data', data);
+
+	// création du doc dans la collection de cv headAndBody
+	const docRef = await addDoc(collection(db, 'headAndBody'), data);
+
+	console.log('addNewDoc docRef', docRef, 'db:', db.app);
+
+	// requête demandant si l'uid a déjà un doc de cvs dans 'CV Collection'
+	// const cvCollection = query(
+	// 	collection(db, 'CV Collection'),
+	// 	where('userId', '==', uid)
+	// );
+	const cvCollection = getCvCollection();
+
+	console.log('addNewDoc', 'cvCollection:', cvCollection);
+	console.log('addNewDoc', 'userId:', uid);
+
+	let querySnapshot = await getDocs(cvCollection);
+
+	console.log('addNewDoc', 'querySnapshot:', querySnapshot);
+
+	if (querySnapshot.docs.length === 0) {
 		// Si pas de doc dans la collection 'CV Collection'
-		const result = await addDoc(collection(db, 'CV Collection'), {
+		const newCVCollect = await addDoc(collection(db, 'CV Collection'), {
 			userId: uid,
 			cvs: [
 				{
@@ -112,14 +147,56 @@ export async function addNewDoc(uid, cvName, data) {
 				},
 			],
 		});
-		return result;
-	} else if (querySnapshot.docs > 1) {
+
+		querySnapshot = await getDocs(newCVCollect);
+
+		await updateDoc(
+			querySnapshot.docs[0].ref,
+			{
+				// userId: uid,
+				cvs: arrayUnion({
+					name: cvName,
+					path: docRef,
+				}),
+			},
+			{
+				merge: true,
+				// timestamp: serverTimestamp()
+			}
+		);
+		console.log('Données sauvegardées, docRef:', docRef);
+		return docRef; // ?
+	} else if (querySnapshot.docs.length > 1) {
 		// dimension du docs != 1
 		return null; // renvoie une erreur
 	}
 	// Si l'uid a un doc, on prend la liste des cvs
 	// on y ajoute le nouveau doc
-	updateDoc(
+	// updateDoc(
+	// 	querySnapshot.docs[0].ref,
+	// 	{
+	// 		// userId: uid,
+	// 		cvs: arrayUnion({
+	// 			name: cvName,
+	// 			path: docRef,
+	// 		}),
+	// 	},
+	// 	{
+	// 		merge: true,
+	// 		// timestamp: serverTimestamp()
+	// 	}
+	// )
+	// 	.then(() => {
+	// 		console.log('Données sauvegardées, docRef:', docRef);
+	// 		return docRef; // ?
+	// 	})
+	// 	.catch((err) => {
+	// 		console.error(err);
+	// 		return null;
+	// 	});
+
+	console.log('addNewdoc', 'avant updateDoc');
+	await updateDoc(
 		querySnapshot.docs[0].ref,
 		{
 			// userId: uid,
@@ -128,12 +205,46 @@ export async function addNewDoc(uid, cvName, data) {
 				path: docRef,
 			}),
 		},
-		{ merge: true }
-	)
-		.then((result) => {
-			console.log('Données sauvegardées' + result);
-		})
-		.catch((err) => console.error(err));
+		{
+			merge: true,
+			// timestamp: serverTimestamp()
+		}
+	);
+	console.log('Données sauvegardées, docRef:', docRef);
+	return docRef; // ?
+}
+
+export async function deleteDocCv(uid, cv) {
+	// suppression du doc cv dans la collection headAndBody
+	await deleteDoc(cv.path);
+
+	// const cvCollection = query(
+	// 	collection(db, 'CV Collection'),
+	// 	where('userId', '==', uid)
+	// );
+
+	const cvCollection = getCvCollection();
+
+	// const docRef = await addDoc(collection(db, 'headAndBody'), data);
+
+	const querySnapshot = await getDocs(cvCollection);
+
+	console.log('querySnapshot.docs[0].ref:', querySnapshot.docs[0].ref);
+
+	if (querySnapshot.docs.length === 0) {
+		// Si pas de doc dans la collection 'CV Collection'
+		return null;
+	} else if (querySnapshot.docs.length > 1) {
+		// dimension du docs != 1
+		return null; // renvoie une erreur
+	}
+
+	// const cvs = await querySnapshot.docs[0].get('cvs');
+	// if(cvs.length === 1) {
+
+	await updateDoc(querySnapshot.docs[0].ref, {
+		cvs: arrayRemove(cv),
+	});
 }
 
 /**
@@ -165,28 +276,6 @@ export function writeDataWithRef(docRef, data) {
 async function writeNewData() {
 	const docRef = await addDoc(collection(db, 'headAndBody'), dataDoe);
 }
-// (async () => {
-// 	await writeNewData();
-// 	// all of the script....
-// })();
-
-export function writeUserData(userId, name, email, imageUrl) {
-	const db = getDatabase();
-	set(ref(db, 'users/' + userId), {
-		username: name,
-		email: email,
-		profile_picture: imageUrl,
-	});
-}
-
-async function queryForDocuments() {
-	const customerOrdersQuery = query(
-		collection(db, 'orders'), // orders est le nom de la collection
-		where('drink', '==', 'Latte'), // drink est le nom d'un des champs
-		limit(10)
-	);
-	getDocs(customerOrdersQuery);
-}
 
 /**
  * Renvoie la liste des cvs de l'utilisateur
@@ -194,22 +283,22 @@ async function queryForDocuments() {
  * @returns {Array} array des cvs
  */
 export async function getUserCVCollection(uid) {
-	const cvCollection = query(
-		collection(db, 'CV Collection'),
-		where('userId', '==', uid)
-	);
+	// const cvCollection = query(
+	// 	collection(db, 'CV Collection'),
+	// 	where('userId', '==', uid)
+	// );
 
-	// console.log('getUserCVCollection, cvCollection: ', cvCollection);
+	const cvCollection = getCvCollection();
+
 	const querySnapshot = await getDocs(cvCollection);
 
-	if (querySnapshot.docs === 0) {
+	if (querySnapshot.docs.length === 0) {
 		return [];
-	} else if (querySnapshot.docs > 1) {
+	} else if (querySnapshot.docs.length > 1) {
 		// dimension du docs != 1
 		return null; // renvoie une erreur
 	}
 	const cvs = await querySnapshot.docs[0].get('cvs');
-	// console.log('getUserCVCollection => ', cvs);
 	return cvs;
 }
 
@@ -222,9 +311,9 @@ export function getDataFromRef(ref) {
 onAuthStateChanged(auth, (user) => {
 	if (user) {
 		// const uid = user.uid;
-		console.log('onAuthStateChanged, User', user);
+		console.warn('onAuthStateChanged, User', user);
 	} else {
-		console.log('onAuthStateChanged User, aucun utilisateur connecté');
+		console.warn('onAuthStateChanged User, aucun utilisateur connecté');
 	}
 });
 console.log('Chargement firebase-config, User');
@@ -236,4 +325,278 @@ console.log('Chargement firebase-config, User');
  */
 export function getUser(userOnChange) {
 	onAuthStateChanged(auth, userOnChange);
+}
+
+let uid = null;
+
+export async function isAuthenticated(className) {
+	auth.onAuthStateChanged(function (user) {
+		if (user) {
+			// const uid = user.uid;
+			console.warn(className, 'onAuthStateChanged, User', user);
+			uid = user.uuid;
+		} else {
+			console.warn(
+				className,
+				'onAuthStateChanged User, aucun utilisateur connecté'
+			);
+			uid = null;
+		}
+	});
+	// return new Promise((resolve, reject) =>
+	// 	auth.onAuthStateChanged(resolve, reject)
+	// );
+}
+
+// Storage
+const storage = getStorage();
+export const cvDefaultName = 'cv-max.bmp';
+export const cvDefaultUri = `gs://cv-react-b26d1.appspot.com/${cvDefaultName}`;
+// Create a reference from a Google Cloud Storage URI
+
+// Get the download URL
+// export const getImageUrl = (imgName, onLoad, directory) => {
+export const getImageUrl = (imgName, onLoad, directory) => {
+	// let cvUri;
+	// if (typeof directory === 'undefined')
+	// 	cvUri = `gs://cv-react-b26d1.appspot.com/${imgName}`;
+	// else cvUri = `gs://cv-react-b26d1.appspot.com/${directory}/${imgName}`;
+
+	uid = auth.currentUser.uid;
+	const cvUri = `gs://cv-react-b26d1.appspot.com/${uid}/${imgName}`;
+	console.log('cvUri', cvUri);
+
+	const gsReference = ref(storage, cvUri);
+	getDownloadURL(gsReference)
+		.then((url) => {
+			// Insert url into an <img> tag to "download"
+			console.log('url', url);
+			onLoad(url);
+		})
+		.catch((error) => {
+			// A full list of error codes is available at
+			// https://firebase.google.com/docs/storage/web/handle-errors
+			switch (error.code) {
+				case 'storage/object-not-found':
+					console.err(`L'image ${cvDefaultName} n'existe pas`, error);
+					break;
+				case 'storage/unauthorized':
+					// User doesn't have permission to access the object
+					console.err(
+						`L'utilisateur n'a pas accès à l'image ${cvDefaultName}`
+					);
+					break;
+				case 'storage/canceled':
+					// User canceled the upload
+					console.warn(
+						`L'utilisateur a annuler le téléchargement de l'image ${cvDefaultName}`
+					);
+					break;
+				case 'storage/unknown':
+					// Unknown error occurred, inspect the server response
+					console.error('Erreur inconnue:', error);
+					break;
+				default:
+			}
+		});
+};
+
+// const cvUri = `gs://cv-react-b26d1.appspot.com/${uid}/${imgName}`;
+
+// Get the download URL
+// imgFullPath: ex cv-react-b26d1.appspot.com/exemple.jpg
+export const getImageUrlFromFullPath = (imgFullPath, onLoad) => {
+	const cvUri = `gs://${imgFullPath}`;
+
+	uid = auth.currentUser.uid;
+	console.log('cvUri', cvUri);
+
+	const gsReference = ref(storage, cvUri);
+	getDownloadURL(gsReference)
+		.then((url) => {
+			// Insert url into an <img> tag to "download"
+			console.log('url', url);
+			onLoad(url);
+		})
+		.catch((error) => {
+			// A full list of error codes is available at
+			// https://firebase.google.com/docs/storage/web/handle-errors
+			switch (error.code) {
+				case 'storage/object-not-found':
+					console.err(`L'image ${cvDefaultName} n'existe pas`, error);
+					break;
+				case 'storage/unauthorized':
+					// User doesn't have permission to access the object
+					console.err(
+						`L'utilisateur n'a pas accès à l'image ${cvDefaultName}`
+					);
+					break;
+				case 'storage/canceled':
+					// User canceled the upload
+					console.warn(
+						`L'utilisateur a annuler le téléchargement de l'image ${cvDefaultName}`
+					);
+					break;
+				case 'storage/unknown':
+					// Unknown error occurred, inspect the server response
+					console.error('Erreur inconnue:', error);
+					break;
+				default:
+			}
+		});
+};
+
+export const getImageUrlFromUidDirectory = (onLoad) => {
+	// Create a reference under which you want to list
+	const listRef = ref(storage, uid);
+
+	// Find all the prefixes and items.
+	listAll(listRef)
+		.then((res) => {
+			res.items.forEach((itemRef) => {
+				// All the items under listRef.
+				getImageUrlFromFullPath(
+					`${itemRef.bucket}/${itemRef.fullPath}`,
+					(url) => onLoad(url, itemRef.name)
+				);
+			});
+		})
+		.catch((error) => {
+			// Uh-oh, an error occurred!
+			console.err('Impossible de charger les images:', error);
+		});
+};
+
+async function getImagesSubCollection() {
+	const cvCollection = getCvCollection();
+
+	let querySnapshot = await getDocs(cvCollection);
+
+	console.log('getImagesCollection', 'querySnapshot:', querySnapshot);
+
+	if (querySnapshot.docs.length === 1) {
+		return collection(
+			db,
+			'CV Collection',
+			querySnapshot.docs[0].id,
+			'images'
+		);
+	}
+	return null;
+}
+
+export async function getImageUrlFromCollection() {
+	uid = auth.currentUser.uid;
+	// console.log('uploadPhotos uid:', uid);
+
+	// const cvCollection = query(
+	// 	collection(db, 'CV Collection'),
+	// 	where('userId', '==', uid)
+	// );
+
+	// const cvCollection = getCvCollection();
+
+	// let querySnapshot = await getDocs(cvCollection);
+
+	// console.log('uploadPhotos', 'querySnapshot:', querySnapshot);
+
+	// if (querySnapshot.docs.length === 1) {
+	// 	console.log('uploadPhotos cvCollection:', cvCollection);
+	// 	// const photos = querySnapshot.docs[0]
+	// 	const photosCollec = collection(
+	// 		db,
+	// 		'CV Collection',
+	// 		querySnapshot.docs[0].id,
+	// 		'images'
+	// 	);
+	const photosCollec = await getImagesSubCollection();
+	if (photosCollec) {
+		const photoDoc = await getDocs(photosCollec);
+		console.log('uploadPhotos', 'photDoc.docs', photoDoc.docs);
+		let photoSet = [];
+		photoDoc.docs.forEach((photo) => {
+			// console.log('uploadPhotos, photo', photo.data());
+
+			photoSet.push(
+				new Photo(
+					photo.data().name,
+					photo.data().url,
+					photo.data().timestamp.seconds
+				)
+				// new Photo(photo.data().name, photo.data().url, Date.now())
+			);
+		});
+		console.log('uploadPhotos, photSet:', photoSet);
+		return photoSet;
+	}
+	// else if (querySnapshot.docs.length > 1) {
+	// 	// dimension du docs != 1
+	// 	return null; // renvoie une erreur
+	// }
+}
+
+export function uploadImage(file, onLoad) {
+	console.log('uploadImage currenUser', auth.currentUser);
+	uid = auth.currentUser.uid;
+
+	const imageRef = ref(storage, `${uid}/${file.name}`);
+
+	// 'file' comes from the Blob or File API
+	uploadBytes(imageRef, file).then((snapshot) => {
+		console.log('Uploaded a blob or file!');
+		onLoad();
+	});
+}
+
+export async function uploadImageToCollection(file, onLoad) {
+	console.log('uploadImage currenUser', auth.currentUser);
+	uid = auth.currentUser.uid;
+
+	const imageRef = ref(storage, `${uid}/${file.name}`);
+
+	// First of all we upload the file into Firestore
+	const uploadResult = await uploadBytes(imageRef, file);
+
+	// const timestamp = uploadResult.metadata.timeCreated;
+	// console.log('uploadImageToCollection, uploadResult', uploadResult);
+
+	// We get the download URL
+	const cvUri = `gs://${uploadResult.metadata.bucket}/${uploadResult.metadata.fullPath}`;
+	console.log('uploadImageToCollection, cvUri', cvUri);
+
+	const gsReference = ref(storage, cvUri);
+	const url = await getDownloadURL(gsReference);
+
+	if (!url) {
+		return null;
+	}
+
+	console.log('uploadImageToCollection, url', url);
+
+	// We update the data of the 'image' collection
+	// const cvCollection = getCvCollection();
+
+	// let querySnapshot = await getDocs(cvCollection);
+
+	// console.log('uploadImageToCollection', 'querySnapshot:', querySnapshot);
+
+	// if (querySnapshot.docs.length === 1) {
+	// 	console.log('uploadImageToCollection cvCollection:', cvCollection);
+	// 	// subcollection of images
+	// 	const photosCollec = collection(
+	// 		db,
+	// 		'CV Collection',
+	// 		querySnapshot.docs[0].id,
+	// 		'images'
+	// 	);
+	const photosCollec = await getImagesSubCollection();
+	if (photosCollec) {
+		const newCVCollect = await addDoc(photosCollec, {
+			name: file.name,
+			timestamp: Timestamp.now(), // Date.parse(timestamp)
+			url,
+		});
+
+		onLoad();
+	}
 }
