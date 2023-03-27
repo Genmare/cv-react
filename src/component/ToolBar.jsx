@@ -1,16 +1,23 @@
 import { useState, useContext } from 'react';
-import { styled } from '@mui/material/styles';
-import Slider from '@mui/material/Slider';
-// import { CSSTransition } from 'react-transition-group';
+
+import { createTheme, styled, ThemeProvider } from '@mui/material/styles';
+
+import {
+	Button,
+	FormGroup,
+	FormControlLabel,
+	Checkbox,
+	IconButton,
+	Paper,
+	Slider,
+	Tooltip,
+	useMediaQuery,
+	dividerClasses,
+} from '@mui/material';
+
 import styles from '../style/toolbar.module.css';
-
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import FormGroup from '@mui/material/FormGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-import Paper from '@mui/material/Paper';
-
 import ConfirmSave from './ConfirmSave';
+import { CustomSlider } from '../Widget/Mui/CustomSlider';
 
 import '../App.css';
 
@@ -32,21 +39,19 @@ import Animation from '../Widget/Animation';
 // import { useFilePicker } from 'use-file-picker';
 
 import {
-	getImageUrl,
-	getImageUrlFromUidDirectory,
-	uploadImage,
 	getImageUrlFromCollection,
 	writeDataWithRef,
 	uploadImageToCollection,
 } from '../firebase-config';
 import {
+	AddAPhotoTwoTone,
 	Home,
 	LogoutTwoTone,
+	PhotoLibrary,
 	PictureAsPdfTwoTone,
-	AddAPhotoTwoTone,
 } from '@mui/icons-material';
-import { Button, IconButton, Tooltip } from '@mui/material';
 import Gallery from './Gallery';
+import MyCustomSlider from 'Widget/Mui/MyCustomSlider';
 
 const theme = createTheme({
 	palette: {
@@ -62,28 +67,34 @@ const theme = createTheme({
 		// fontSize: '1.1em',
 		fontSize: 10.6,
 	},
+	breakpoints: {
+		values: {
+			md: 1150,
+			lg: 1450,
+		},
+	},
 });
 
 const sliderWidth = 200;
 
-const CustomSlider = styled(Slider)({
-	width: sliderWidth,
-	color: '#555',
-	'& .MuiSlider-thumb': {
-		[`&:hover, &.Mui-focusVisible`]: {
-			boxShadow: '0px 0px 0px 8px var(--box-shadow)',
-		},
-		[`&.Mui-active`]: {
-			boxShadow: '0px 0px 0px 14px var(--box-shadow)',
-		},
-	},
-	'& .MuiSlider-markLabel[data-index="0"]': {
-		transform: 'translateX(0%)',
-	},
-	'& .MuiSlider-markLabel[data-index="1"]': {
-		transform: 'translateX(-100%)',
-	},
-});
+// const CustomSlider = styled(Slider)({
+// 	width: sliderWidth,
+// 	color: '#555',
+// 	'& .MuiSlider-thumb': {
+// 		[`&:hover, &.Mui-focusVisible`]: {
+// 			boxShadow: '0px 0px 0px 8px var(--box-shadow)',
+// 		},
+// 		[`&.Mui-active`]: {
+// 			boxShadow: '0px 0px 0px 14px var(--box-shadow)',
+// 		},
+// 	},
+// 	'& .MuiSlider-markLabel[data-index="0"]': {
+// 		transform: 'translateX(0%)',
+// 	},
+// 	'& .MuiSlider-markLabel[data-index="1"]': {
+// 		transform: 'translateX(-100%)',
+// 	},
+// });
 
 const MyCustomCheckbox = ({ width, elevation, onChange, label, checked }) => (
 	<Paper elevation={elevation}>
@@ -93,11 +104,13 @@ const MyCustomCheckbox = ({ width, elevation, onChange, label, checked }) => (
 					p: '0.5em 1em',
 					m: '0.5em 0',
 					bgcolor: 'background.default',
-					display: 'grid',
 					fontWeight: '1200',
-					gridTemplateColumns: {
-						md: `1fr ${width}px`,
-					},
+					// display: 'grid',
+					// gridTemplateColumns: {
+					// 	md: `1fr ${width}px`,
+					// },
+					display: 'flex',
+					justifyContent: 'center',
 				}}
 				control={
 					<Checkbox
@@ -112,31 +125,103 @@ const MyCustomCheckbox = ({ width, elevation, onChange, label, checked }) => (
 	</Paper>
 );
 
-const MyPaperTitleSlider = styled(Paper)({
-	padding: '1em',
-	margin: '0.5em 0',
-	backgroundColor: 'background.default',
-	display: 'grid',
-	gridTemplateColumns: '1fr 1fr',
-	gap: 2,
-	justifyItems: 'center',
+const MyPaperTitleSlider = styled(Paper)(({ theme }) => ({
+	[theme.breakpoints.down('md')]: {
+		padding: '1em',
+		margin: '0.5em 0',
+		backgroundColor: 'background.default',
+		display: 'flex',
+		flexDirection: 'column',
+		justifyItems: 'center',
+		alignItems: 'center',
 
-	'div:first-of-type': {
-		fontWeight: '600',
-		marginBottom: '1em',
-		gridColumn: '1 / span 2',
-		// textAlign: 'center',
+		'div:first-of-type': {
+			fontWeight: '600',
+			marginBottom: '1em',
+			gridColumn: '1 / span 2',
+		},
 	},
-});
+	[theme.breakpoints.up('md')]: {
+		padding: '1em',
+		margin: '0.5em 0',
+		backgroundColor: 'background.default',
+		display: 'grid',
+		gridTemplateColumns: '1fr 1fr 1fr',
+		gap: 2,
+		justifyItems: 'center',
+
+		// les labels
+		// 'div:nth-child(even)': {
+		'> div': {
+			justifySelf: 'end',
+			alignSelf: 'center',
+			marginRight: '20px',
+			gridColumn: '1 / span 1',
+		},
+
+		// les spiners
+		span: {
+			justifySelf: 'start',
+			alignSelf: 'center',
+			gridColumn: '2 / span 2',
+		},
+
+		'div:first-of-type': {
+			// '> div:first-of-type': {
+			fontWeight: '600',
+			marginBottom: '1em',
+			gridColumn: '1 / span 3',
+			justifySelf: 'center',
+		},
+	},
+	[theme.breakpoints.up('lg')]: {
+		padding: '1em',
+		margin: '0.5em 0',
+		backgroundColor: 'background.default',
+		display: 'flex',
+		justifyContent: 'center',
+		alignItems: 'center',
+
+		// les labels
+		// 'div:nth-of-type(even)': {
+		// 'div:nth-of-type(even)': {
+		// 'span ~ p': {
+		'> div': {
+			justifySelf: 'end',
+			alignSelf: 'center',
+			margin: '0 20px',
+			// background: 'red',
+			// gridColumn: '1 / span 1',
+		},
+
+		// les spiners
+		// span: {
+		// 	// justifySelf: 'start',
+		// 	alignSelf: 'center',
+		// 	// gridColumn: '2 / span 2',
+		// },
+
+		'div:first-of-type': {
+			fontWeight: '600',
+			margin: '0 10px',
+		},
+	},
+}));
 
 const MyPaperSlider = styled(Paper)({
 	padding: '1em',
 	margin: '0.5em 0',
 	backgroundColor: 'background.default',
-	display: 'grid',
-	gridTemplateColumns: '1fr 1fr',
-	gap: 2,
-	justifyItems: 'center',
+	// display: 'grid',
+	// gridTemplateColumns: '1fr 1fr',
+	// gap: 2,
+	// justifyItems: 'center',
+	display: 'flex',
+	justifyContent: 'center',
+
+	'>div': {
+		marginRight: '10px',
+	},
 });
 
 const MyPhotoPaper = styled(Paper)({
@@ -219,21 +304,22 @@ export default function ToolBar({
 	toHome,
 }) {
 	// detect si une ou plusieurs données ont été changés
+
 	let isChanged = false;
 
-	const noop = () => {};
+	const lgResponsive = useMediaQuery(theme.breakpoints.up('lg'));
+	// 	let colNum = matches ? 3 : 2;
+	// 	let width = matches ? 500 : 270;
 
+	// const [imageSelected, setImageSelected] = useState();
+
+	const noop = () => {};
 	// const FileInput = ({ value, onChange = noop, ...rest }) => (
 	const FileInput = ({ onChange = noop }) => (
-		<IconButton
+		<Button
 			aria-label="charger une image	"
 			component="label"
-			// onClick={logout}
-			// sx={{
-			// 	border: 'solid',
-			// 	color: 'white',
-			// 	backgroundColor: '#67b9e5',
-			// }}
+			startIcon={<AddAPhotoTwoTone />}
 		>
 			<input
 				accept="image/*"
@@ -247,8 +333,8 @@ export default function ToolBar({
 					console.log('FileInput changeSrc', 'e', e);
 				}}
 			/>
-			<AddAPhotoTwoTone />
-		</IconButton>
+			Charger photo
+		</Button>
 	);
 
 	const [imgInputFile, setImgInputFile] = useState(null);
@@ -323,8 +409,9 @@ export default function ToolBar({
 		});
 
 	const changeSrc = (event) => {
-		// console.log('changeSrc event', event);
+		console.log('changeSrc event', event);
 		// getBase64(event);
+		// setImageSelected(event);
 		changeData({
 			input: event,
 			prop: 'src',
@@ -405,37 +492,22 @@ export default function ToolBar({
 		writeDataWithRef(docRef, data);
 	};
 
-	const toolbarbtnStyle = {
-		// backgroundColor: 'black',
-		marginBottom: '20px',
-		display: 'flex',
-		// flexDirection: 'column',
-
-		// alignItems: 'flex-start',
-		// justifyContent: 'center',
-
-		// height: '100%',
-	};
+	// const toolbarbtnStyle = {
+	// 	marginBottom: '20px',
+	// };
 
 	const [imgPaths, setImgPaths] = useState([]);
+	const [openGallery, setOpenGallery] = useState(false);
 
 	const loadPhotoGallery = () => {
+		// setImageSelected(null);
 		setImgPaths([]);
 		getImageUrlFromCollection().then((photoList) => {
-			console.log('loadPhotoGallery, photoList:', photoList);
-			console.log('loadPhotoGallery, imgPaths', imgPaths);
-			// setImgPaths((prevState) => [...prevState, ...photoList]);
 			photoList = photoList.sort((photoA, photoB) => {
-				console.log(
-					'loadPhotoGallery photoA.timestamp',
-					photoA.timestamp,
-					'photoB.timestamp',
-					photoB.timestamp,
-					photoA.timestamp < photoB.timestamp ? 0 : 1
-				);
 				return photoB.timestamp - photoA.timestamp;
 			});
 			console.log('loadPhotoGallery, après sort photoList:', photoList);
+
 			setImgPaths(photoList);
 		});
 		// getImageUrlFromUidDirectory((imgPath, name) => {
@@ -453,7 +525,7 @@ export default function ToolBar({
 	return (
 		// <div style={{ position: 'sticky', top: '0px', height: '10000px' }}>
 		<Container>
-			<div className="toolbarbtn" style={toolbarbtnStyle}>
+			<div className="toolbarbtn">
 				<Tooltip title="Page d'Accueil">
 					<IconButton
 						onClick={toHome}
@@ -529,7 +601,7 @@ export default function ToolBar({
 								case 'fontColor':
 									return (
 										<WidgetContener key={index}>
-											<p>Couleur des caractères</p>
+											<p p>Couleur des caractères</p>
 											<PickerLayout>
 												<PopoverPicker
 													color={component.fontColor}
@@ -551,27 +623,48 @@ export default function ToolBar({
 												onChange={changeSrc}
 												key={index}
 											/>
-											<span>Charger une photo</span>
 											<Button
-												// disabled={
-												// 	!data ||
-												// 	!data.photo
-												// 		?.photoCollection ||
-												// 	data.photo?.photoCollection
-												// 		.length === 0
-												// }
-												onClick={loadPhotoGallery}
+												onClick={() => {
+													console.group(
+														'onClick gallery'
+													);
+													console.log(
+														'openGallery',
+														openGallery
+													);
+													setOpenGallery(
+														(prevState) =>
+															!prevState
+													);
+													console.log(
+														'Après set openGallery',
+														openGallery
+													);
+													!openGallery &&
+														loadPhotoGallery();
+													console.groupEnd(
+														'Fin onClick gallery'
+													);
+												}}
+												startIcon={<PhotoLibrary />}
 											>
 												Photothèque
 											</Button>
-											{imgPaths.length > 0 && (
-												<Gallery
-													// imgData={imgPaths}
-													photoList={imgPaths}
-													onClick={changeSrc}
-												/>
-											)}
-											<Button
+											{imgPaths.length > 0 &&
+												openGallery && (
+													<Gallery
+														// imgData={imgPaths}
+														photoList={imgPaths}
+														onClick={changeSrc}
+														onSaveClick={() =>
+															uploadImageToCollection(
+																imgInputFile,
+																loadPhotoGallery
+															)
+														}
+													/>
+												)}
+											{/* <Button
 												onClick={() => {
 													// uploadImage(
 													// 	imgInputFile,
@@ -582,9 +675,15 @@ export default function ToolBar({
 														loadPhotoGallery
 													);
 												}}
+												style={{
+													display: openGallery
+														? 'inline-flex'
+														: 'none',
+												}}
+												disabled={!imageSelected}
 											>
-												Sauver une image
-											</Button>
+												Sauvegarder une image
+											</Button> */}
 										</MyPhotoPaper>
 									);
 								case 'isCircle':
@@ -607,6 +706,7 @@ export default function ToolBar({
 										>
 											<div>Zoom Photo</div>
 											<CustomSlider
+												sliderWidth={sliderWidth}
 												valueLabelDisplay="auto"
 												value={component.zoom}
 												min={0}
@@ -634,156 +734,81 @@ export default function ToolBar({
 									);
 								case 'dim':
 									return (
-										<MyPaperTitleSlider
-											elevation={elevation}
+										<MyCustomSlider
 											key={index}
-										>
-											<div>Dimension du cadre</div>
-											<div>Largeur</div>
-											<CustomSlider
-												valueLabelDisplay="auto"
-												value={component.dim.width}
-												min={50}
-												max={300}
-												getAriaValueText={(value) =>
-													`${value}px`
-												}
-												valueLabelFormat={(value) =>
-													`${value}px`
-												}
-												onChange={(e) =>
-													changeDim('width', e)
-												}
-											/>
-											<div>Hauteur</div>
-											<CustomSlider
-												valueLabelDisplay="auto"
-												value={component.dim.height}
-												min={50}
-												max={300}
-												getAriaValueText={(value) =>
-													`${value}px`
-												}
-												valueLabelFormat={(value) =>
-													`${value}px`
-												}
-												marks={[
-													{
-														value: 50,
-														label: '50px',
-													},
-													{
-														value: 300,
-														label: '300px',
-													},
-												]}
-												onChange={(e) =>
-													changeDim('height', e)
-												}
-											/>
-										</MyPaperTitleSlider>
+											elevation={elevation}
+											changeValue={changeDim}
+											firstValue={component.dim.width}
+											firstLabel="Largeur"
+											firstChangedValue="width"
+											min={50}
+											minMarks={{
+												value: 50,
+												label: '50px',
+											}}
+											max={300}
+											maxMarks={{
+												value: 300,
+												label: '300px',
+											}}
+											secondValue={component.dim.height}
+											secondLabel="Hauteur"
+											secondChangedValue="height"
+											lgResponsive={lgResponsive}
+											title="Dimension du cadre"
+										/>
 									);
 								case 'coord':
 									return (
-										<MyPaperTitleSlider
-											elevation={elevation}
+										<MyCustomSlider
 											key={index}
-										>
-											<div>Coordonnées Photo</div>
-											<div>X</div>
-											<CustomSlider
-												valueLabelDisplay="auto"
-												value={component.coord.x}
-												min={-100}
-												max={100}
-												getAriaValueText={(value) =>
-													`${value}px`
-												}
-												valueLabelFormat={(value) =>
-													`${value}px`
-												}
-												onChange={(e) =>
-													changeCoord('x', e)
-												}
-											/>
-											<div>Y</div>
-											<CustomSlider
-												valueLabelDisplay="auto"
-												value={component.coord.y}
-												min={-100}
-												max={100}
-												getAriaValueText={(value) =>
-													`${value}px`
-												}
-												valueLabelFormat={(value) =>
-													`${value}px`
-												}
-												marks={[
-													{
-														value: -100,
-														label: '-100px',
-													},
-													{
-														value: 100,
-														label: '100px',
-													},
-												]}
-												onChange={(e) =>
-													changeCoord('y', e)
-												}
-											/>
-										</MyPaperTitleSlider>
+											elevation={elevation}
+											changeValue={changeCoord}
+											firstValue={component.coord.x}
+											firstLabel="X"
+											firstChangedValue="x"
+											min={-100}
+											minMarks={{
+												value: -100,
+												label: '100px',
+											}}
+											max={100}
+											maxMarks={{
+												value: 100,
+												label: '100px',
+											}}
+											secondValue={component.coord.y}
+											secondLabel="Y"
+											secondChangedValue="y"
+											lgResponsive={lgResponsive}
+											title="Coordonnées Photo"
+										/>
 									);
 								case 'coordFrame':
 									return (
-										<MyPaperTitleSlider
-											elevation={elevation}
+										<MyCustomSlider
 											key={index}
-										>
-											<div>Coordonnées Cadre</div>
-											<div>X</div>
-											<CustomSlider
-												valueLabelDisplay="auto"
-												value={component.coordFrame.x}
-												min={-100}
-												max={100}
-												getAriaValueText={(value) =>
-													`${value}px`
-												}
-												valueLabelFormat={(value) =>
-													`${value}px`
-												}
-												onChange={(e) =>
-													changeCoordFrame('x', e)
-												}
-											/>
-											<div>Y</div>
-											<CustomSlider
-												valueLabelDisplay="auto"
-												value={component.coordFrame.y}
-												min={-100}
-												max={100}
-												getAriaValueText={(value) =>
-													`${value}px`
-												}
-												valueLabelFormat={(value) =>
-													`${value}px`
-												}
-												marks={[
-													{
-														value: -100,
-														label: '-100px',
-													},
-													{
-														value: 100,
-														label: '100px',
-													},
-												]}
-												onChange={(e) =>
-													changeCoordFrame('y', e)
-												}
-											/>
-										</MyPaperTitleSlider>
+											elevation={elevation}
+											changeValue={changeCoordFrame}
+											firstValue={component.coordFrame.x}
+											firstLabel="X"
+											firstChangedValue="x"
+											min={-100}
+											minMarks={{
+												value: -100,
+												label: '100px',
+											}}
+											max={100}
+											maxMarks={{
+												value: 100,
+												label: '100px',
+											}}
+											secondValue={component.coordFrame.y}
+											secondLabel="Y"
+											secondChangedValue="y"
+											lgResponsive={lgResponsive}
+											title="Coordonnées Cadre"
+										/>
 									);
 								default:
 									return (

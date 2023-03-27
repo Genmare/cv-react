@@ -21,6 +21,8 @@
 /src/data/photoCV*.jpg 
 /src/data/data*.json
 notes
+a\ faire.txt
+jsconfig.json
 
 npm-debug.log*
 yarn-debug.log*

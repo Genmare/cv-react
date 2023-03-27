@@ -283,11 +283,6 @@ async function writeNewData() {
  * @returns {Array} array des cvs
  */
 export async function getUserCVCollection(uid) {
-	// const cvCollection = query(
-	// 	collection(db, 'CV Collection'),
-	// 	where('userId', '==', uid)
-	// );
-
 	const cvCollection = getCvCollection();
 
 	const querySnapshot = await getDocs(cvCollection);
@@ -357,11 +352,6 @@ export const cvDefaultUri = `gs://cv-react-b26d1.appspot.com/${cvDefaultName}`;
 // Get the download URL
 // export const getImageUrl = (imgName, onLoad, directory) => {
 export const getImageUrl = (imgName, onLoad, directory) => {
-	// let cvUri;
-	// if (typeof directory === 'undefined')
-	// 	cvUri = `gs://cv-react-b26d1.appspot.com/${imgName}`;
-	// else cvUri = `gs://cv-react-b26d1.appspot.com/${directory}/${imgName}`;
-
 	uid = auth.currentUser.uid;
 	const cvUri = `gs://cv-react-b26d1.appspot.com/${uid}/${imgName}`;
 	console.log('cvUri', cvUri);
@@ -487,28 +477,7 @@ async function getImagesSubCollection() {
 
 export async function getImageUrlFromCollection() {
 	uid = auth.currentUser.uid;
-	// console.log('uploadPhotos uid:', uid);
 
-	// const cvCollection = query(
-	// 	collection(db, 'CV Collection'),
-	// 	where('userId', '==', uid)
-	// );
-
-	// const cvCollection = getCvCollection();
-
-	// let querySnapshot = await getDocs(cvCollection);
-
-	// console.log('uploadPhotos', 'querySnapshot:', querySnapshot);
-
-	// if (querySnapshot.docs.length === 1) {
-	// 	console.log('uploadPhotos cvCollection:', cvCollection);
-	// 	// const photos = querySnapshot.docs[0]
-	// 	const photosCollec = collection(
-	// 		db,
-	// 		'CV Collection',
-	// 		querySnapshot.docs[0].id,
-	// 		'images'
-	// 	);
 	const photosCollec = await getImagesSubCollection();
 	if (photosCollec) {
 		const photoDoc = await getDocs(photosCollec);
@@ -574,21 +543,6 @@ export async function uploadImageToCollection(file, onLoad) {
 	console.log('uploadImageToCollection, url', url);
 
 	// We update the data of the 'image' collection
-	// const cvCollection = getCvCollection();
-
-	// let querySnapshot = await getDocs(cvCollection);
-
-	// console.log('uploadImageToCollection', 'querySnapshot:', querySnapshot);
-
-	// if (querySnapshot.docs.length === 1) {
-	// 	console.log('uploadImageToCollection cvCollection:', cvCollection);
-	// 	// subcollection of images
-	// 	const photosCollec = collection(
-	// 		db,
-	// 		'CV Collection',
-	// 		querySnapshot.docs[0].id,
-	// 		'images'
-	// 	);
 	const photosCollec = await getImagesSubCollection();
 	if (photosCollec) {
 		const newCVCollect = await addDoc(photosCollec, {

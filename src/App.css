@@ -15,7 +15,8 @@
 	/* largeurs marges */
 	--taille-aside: 265px;
 	--taille-marge: 3%;
-	--main-container-max-width: 1150px;
+	/* --main-container-max-width: 1150px; */
+	--main-container-max-width: 1500px;
 	--a4-width: 21cm;
 	--a4-height: 29.7cm;
 	--error-width: 600px;
@@ -49,8 +50,13 @@ body {
 
 .toolbarbtn {
 	display: flex;
-	justify-content: space-around;
-	width: calc( var(--main-container-max-width) - var(--a4-width) );
+	justify-content: center;
+	/* width: calc( var(--main-container-max-width) - var(--a4-width) ); */
+	margin-bottom: 20px;
+}
+
+.toolbarbtn > button {
+	margin: 0 5px 0 5px;
 }
 
 .button {

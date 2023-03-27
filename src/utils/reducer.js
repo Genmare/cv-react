@@ -547,6 +547,7 @@ export const reducer = (state, action) => {
 		case 'zoom':
 		case 'coord':
 		case 'coordFrame':
+		case 'src':
 			console.log(`reducer - ${action.type}`, action);
 			return {
 				...state,

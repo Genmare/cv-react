@@ -1,12 +1,22 @@
 import React, { useState } from 'react';
-import Box from '@mui/material/Box';
-import ImageList from '@mui/material/ImageList';
-import ImageListItem from '@mui/material/ImageListItem';
-import ImageListItemBar from '@mui/material/ImageListItemBar';
+import {
+	Box,
+	Button,
+	ImageList,
+	ImageListItem,
+	ImageListItemBar,
+	useMediaQuery,
+} from '@mui/material';
 // import Modal from '@mui/material/Modal';
 
 // function Gallery({ imgData, onClick, onConfirm = () => {} }) {
-function Gallery({ photoList, onClick, onConfirm = () => {} }) {
+function Gallery({
+	photoList,
+	onClick,
+	onConfirm = () => {},
+	onSaveClick,
+	onDeleteClick,
+}) {
 	const [open, setOpen] = useState(false);
 	const handleOpen = () => setOpen(true);
 	const handleClose = () => setOpen(false);
@@ -28,18 +38,20 @@ function Gallery({ photoList, onClick, onConfirm = () => {} }) {
 	};
 	const [imgSelected, setImgSelected] = useState();
 
+	const matches = useMediaQuery('(min-width:1320px)');
+	let colNum = matches ? 3 : 2;
+	let width = matches ? 500 : 270;
+
 	// console.log('Gallery image imgData', imgData);
 	console.log('Gallery image photoList', photoList);
 	return (
-		// <Modal
-		// 	open={open}
-		// 	onClose={handleClose}
-		// 	aria-labelledby="modal-modal-title"
-		// 	aria-describedby="modal-modal-description"
-		// >
-		// <Box sx={{ width: 250, height: 450, overflowY: 'scroll' }}>
-		<Box sx={{ width: 270, overflowY: 'scroll' }}>
-			<ImageList cols={2} gap={8} sx={{ padding: '2px' }}>
+		<Box
+			sx={{
+				width,
+				overflowY: 'auto',
+			}}
+		>
+			<ImageList cols={colNum} gap={2} sx={{ padding: '2px' }}>
 				{/* {imgData.map((item) => ( */}
 				{photoList &&
 					photoList.map((photo) => (
@@ -83,8 +95,30 @@ function Gallery({ photoList, onClick, onConfirm = () => {} }) {
 						</ImageListItem>
 					))}
 			</ImageList>
+			<div
+				style={{
+					display: 'flex',
+					justifyContent: 'center',
+				}}
+			>
+				<Button
+					onClick={() => {
+						onSaveClick();
+					}}
+					disabled={!imgSelected}
+				>
+					Sauvegarder une image
+				</Button>
+				<Button
+					onClick={() => {
+						onDeleteClick();
+					}}
+					disabled={!imgSelected}
+				>
+					Éffacer une image
+				</Button>
+			</div>
 		</Box>
-		// </Modal>
 	);
 }
 
