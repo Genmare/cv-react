@@ -5,7 +5,7 @@ import { StyleContext } from '../utils/context';
 import Hover from './Hover';
 
 import SpanSelectable from './SpanSelectable';
-
+import LineSelectable from './LineSelectable';
 import Tools from '../Tools';
 
 const Paragraphe = styled.div`
@@ -81,17 +81,6 @@ export default function Section({
 
 	const drop = (e, idSection, idSentence, index) => {
 		console.log('Section, dragEnd');
-		// const copyListItems = [...list];
-		// const dragItemContent = copyListItems[dragItem.current];
-		// copyListItems.splice(dragItem.current, 1);
-		// copyListItems.splice(dragOverItem.current, 0, dragItemContent);
-
-		// drop(
-		// 	e,
-		// 	idSection,
-		// 	categorie.iteration,
-		// 	index
-		// )
 
 		dispatch({
 			type: 'swap',
@@ -287,21 +276,38 @@ export default function Section({
 										}
 									})
 								) : (
-									<SpanSelectable
-										value={categorie.phrase}
-										fontSize={fontS}
-										bgColor={'white'}
-										onSubmit={(value) =>
-											dispatch({
-												type: 'submit',
-												idSection,
-												idSentence: categorie.id,
-												prop: 'phrase',
-												value,
-												// oldValue: categorie.phrase,
-											})
-										}
-									/>
+									<>
+										{/* <SpanSelectable
+											value={categorie.phrase}
+											fontSize={fontS}
+											bgColor={'white'}
+											onSubmit={(value) =>
+												dispatch({
+													type: 'submit',
+													idSection,
+													idSentence: categorie.id,
+													prop: 'phrase',
+													value,
+													// oldValue: categorie.phrase,
+												})
+											}
+										/> */}
+										<LineSelectable
+											value={categorie.phrase}
+											fontSize={fontS}
+											classN="paraSelectable"
+											onSubmit={(value) =>
+												dispatch({
+													type: 'submit',
+													idSection,
+													idSentence: categorie.id,
+													prop: 'phrase',
+													value,
+													// oldValue: categorie.phrase,
+												})
+											}
+										/>
+									</>
 								)}
 							</p>
 						</Hover>

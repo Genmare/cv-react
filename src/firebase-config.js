@@ -30,6 +30,7 @@ import {
 	Timestamp,
 } from 'firebase/firestore';
 import {
+	deleteObject,
 	getDownloadURL,
 	getStorage,
 	listAll,
@@ -518,7 +519,7 @@ export function uploadImage(file, onLoad) {
 }
 
 export async function uploadImageToCollection(file, onLoad) {
-	console.log('uploadImage currenUser', auth.currentUser);
+	console.log('uploadImage currenUser', auth.currentUser, 'file', file);
 	uid = auth.currentUser.uid;
 
 	const imageRef = ref(storage, `${uid}/${file.name}`);
@@ -552,5 +553,34 @@ export async function uploadImageToCollection(file, onLoad) {
 		});
 
 		onLoad();
+		return newCVCollect;
+	}
+}
+
+export async function deleteImageFromCollection(file, onLoad) {
+	uid = auth.currentUser.uid;
+
+	// Create a reference to the file to delete
+	const imageRef = ref(storage, `${uid}/${file.name}`);
+
+	// Delete the file
+	const deleteResult = await deleteObject(imageRef);
+
+	const photosCollec = await getImagesSubCollection();
+	console.log('deleteImageFromCollection, photosCollec', photosCollec);
+	if (photosCollec) {
+		const queryRef = query(photosCollec, where('name', '==', file.name));
+		console.log('deleteImageFromCollection, queryRef', queryRef);
+
+		const querySnapshot = await getDocs(queryRef);
+		console.log('deleteImageFromCollection, querySnapshot', querySnapshot);
+
+		querySnapshot.forEach(async (doc) => {
+			console.log('deleteImageFromCollection, doc', doc);
+
+			await deleteDoc(doc.ref);
+		});
+		onLoad();
+		// return newCVCollect;
 	}
 }

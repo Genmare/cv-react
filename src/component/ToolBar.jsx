@@ -9,10 +9,8 @@ import {
 	Checkbox,
 	IconButton,
 	Paper,
-	Slider,
 	Tooltip,
 	useMediaQuery,
-	dividerClasses,
 } from '@mui/material';
 
 import styles from '../style/toolbar.module.css';
@@ -42,6 +40,7 @@ import {
 	getImageUrlFromCollection,
 	writeDataWithRef,
 	uploadImageToCollection,
+	deleteImageFromCollection,
 } from '../firebase-config';
 import {
 	AddAPhotoTwoTone,
@@ -76,25 +75,6 @@ const theme = createTheme({
 });
 
 const sliderWidth = 200;
-
-// const CustomSlider = styled(Slider)({
-// 	width: sliderWidth,
-// 	color: '#555',
-// 	'& .MuiSlider-thumb': {
-// 		[`&:hover, &.Mui-focusVisible`]: {
-// 			boxShadow: '0px 0px 0px 8px var(--box-shadow)',
-// 		},
-// 		[`&.Mui-active`]: {
-// 			boxShadow: '0px 0px 0px 14px var(--box-shadow)',
-// 		},
-// 	},
-// 	'& .MuiSlider-markLabel[data-index="0"]': {
-// 		transform: 'translateX(0%)',
-// 	},
-// 	'& .MuiSlider-markLabel[data-index="1"]': {
-// 		transform: 'translateX(-100%)',
-// 	},
-// });
 
 const MyCustomCheckbox = ({ width, elevation, onChange, label, checked }) => (
 	<Paper elevation={elevation}>
@@ -495,7 +475,9 @@ export default function ToolBar({
 	// const toolbarbtnStyle = {
 	// 	marginBottom: '20px',
 	// };
-
+	/**
+	 *  Pour charger ou recharger la galerie photo
+	 */
 	const [imgPaths, setImgPaths] = useState([]);
 	const [openGallery, setOpenGallery] = useState(false);
 
@@ -509,6 +491,7 @@ export default function ToolBar({
 			console.log('loadPhotoGallery, après sort photoList:', photoList);
 
 			setImgPaths(photoList);
+			setImgInputFile(null);
 		});
 		// getImageUrlFromUidDirectory((imgPath, name) => {
 		// 	console.log('getImageUrl imgPath', imgPath);
@@ -656,9 +639,28 @@ export default function ToolBar({
 														// imgData={imgPaths}
 														photoList={imgPaths}
 														onClick={changeSrc}
+														disableSave={
+															!imgInputFile
+														}
 														onSaveClick={() =>
 															uploadImageToCollection(
 																imgInputFile,
+																loadPhotoGallery
+															)
+														}
+														// onSaveClick={(
+														// 	imgSelected
+														// ) =>
+														// 	uploadImageToCollection(
+														// 		imgSelected,
+														// 		loadPhotoGallery
+														// 	)
+														// }
+														onDeleteClick={(
+															imgSelected
+														) =>
+															deleteImageFromCollection(
+																imgSelected,
 																loadPhotoGallery
 															)
 														}

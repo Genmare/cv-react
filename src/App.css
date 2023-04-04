@@ -209,6 +209,10 @@ header {
 	margin-right: 0;
 }
 
+.paraSelectable {
+	margin-top: 0;
+}
+
 #corps {
 	grid-column: 3 / 4;
 	grid-row: 3 / 5;

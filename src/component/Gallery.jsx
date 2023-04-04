@@ -14,6 +14,7 @@ function Gallery({
 	photoList,
 	onClick,
 	onConfirm = () => {},
+	disableSave,
 	onSaveClick,
 	onDeleteClick,
 }) {
@@ -103,15 +104,17 @@ function Gallery({
 			>
 				<Button
 					onClick={() => {
+						// onSaveClick(imgSelected);
 						onSaveClick();
 					}}
-					disabled={!imgSelected}
+					disabled={disableSave}
 				>
 					Sauvegarder une image
 				</Button>
 				<Button
 					onClick={() => {
-						onDeleteClick();
+						onClick(null);
+						onDeleteClick(imgSelected);
 					}}
 					disabled={!imgSelected}
 				>
