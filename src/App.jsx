@@ -18,95 +18,105 @@ import { getUser, isAuthenticated, signOut } from './firebase-config';
 import { reducer } from './utils/reducer';
 
 import { StyleContext } from './utils/context';
+import useCVCollection from 'hook/useCvCollection';
+import { getUserCVCollection } from './firebase-config';
 
 function App() {
-	const [isAuth, setIsAuth] = useState(false);
+	const isAuthStor = JSON.parse(sessionStorage.getItem('isAuth'));
+	console.log('isAuthStor :', isAuthStor);
 
-	const [data, setData] = useState(null);
+	const [isAuth, setIsAuth] = useState(isAuthStor);
+
+	const dataStorage = JSON.parse(sessionStorage.getItem('data'));
+
+	const [data, setData] = useState(dataStorage);
+	// const [data, setData] = useState(null);
 
 	const { setglobalStyles, setIdent } = useContext(StyleContext);
 
-	const [dataReducer, dispatch] = useReducer(reducer, null);
+	// const [dataReducer, dispatch] = useReducer(reducer, null);
+	const [dataReducer, dispatch] = useReducer(reducer, dataStorage);
 
 	let isHome = false;
 
+	const storedUid = sessionStorage.getItem('uid');
+	const [uid, setUid] = useState(storedUid ?? '');
+
+	// const userDataStor = JSON.parse(sessionStorage.getItem('userData'));
+	const email = sessionStorage.getItem('email');
+	// const userDataStor = useCVCollection(uid, email);
+	// const [userData, setUserData] = useState(
+	// 	!userDataStor
+	// 		? {
+	// 				name: '',
+	// 				cvList: [],
+	// 		  }
+	// 		: userDataStor
+	// );
 	const [userData, setUserData] = useState({
 		name: '',
 		cvList: [],
 	});
 
-	const [uid, setUid] = useState('');
+	// useEffect(() => {
+	// 	console.log('userDataStor :', userDataStor);
+
+	// 	setUserData(userDataStor);
+	// }, [userDataStor]);
 
 	// identifient du doc cv
+	// const cvStorage = JSON.parse(sessionStorage.getItem('cv?'));
 	const [cv, setCv] = useState(null);
 
 	useEffect(() => {
 		console.log('useEffect dataReducer', dataReducer);
 		isAuthenticated('App');
 
-		window.onbeforeunload = (event) => {
-			const e = event || window.event;
-			console.log('prevent unload');
-			// Cancel the event
-			e.preventDefault();
-			if (e) {
-				e.returnValue = ''; // Legacy method for cross browser support
-			}
-			// return ''; // Legacy method for cross browser support
-			return undefined;
-		};
+		if (!dataReducer && data) dispatch({ type: 'reset', data });
 
-		// En cas de recharge de la page l'uid peut être réinitialisé
-		if (isAuth && uid === '') {
-			// réaffectation de l'uid
-			getUser((user) => setUid(user.uid));
-		}
+		// return () => {
+		// 	console.log('App useEffect isHome', isHome);
+		// 	if (
+		// 		performance.getEntriesByType('navigation')[0].type === 'reload'
+		// 	) {
+		// 		console.log('This page is reloaded');
+		// 		// if (dataReducer !== null && !isHome) {
+		// 		if (dataReducer !== null) {
+		// 			console.log(
+		// 				"sessionStorage.setItem('data', JSON.stringify(dataReducer)})",
+		// 				dataReducer
+		// 			);
+		// 			// sessionStorage.setItem('data', JSON.stringify(data));
+		// 			console.log('App reload dataReducer', dataReducer);
+		// 			sessionStorage.setItem('data', JSON.stringify(dataReducer));
+		// 		}
+		// 	} //else {
+		// 	// 		console.log('This page is not reloaded');
+		// 	// 		sessionStorage.removeItem('data');
+		// 	// 		signOut()
+		// 	// 			.then(() => {
+		// 	// 				console.log("Déconnexion de l'utilisateur");
+		// 	// 				// setIsAuth(false);
+		// 	// 				// setData(null);
+		// 	// 			})
+		// 	// 			.catch((error) =>
+		// 	// 				console.log('Déconnexion inpossible:', error)
+		// 	// 			);
+		// 	// 	}
 
-		let dataStorage = null; // données stockées dans le cache
+		// 	// sessionStorage.setItem('isAuth', isAuth);
+		// 	console.warn('App closed');
+		// 	console.log('App closed dataReducer', dataReducer);
+		// 	// sessionStorage.setItem('data', JSON.stringify(dataReducer));
 
-		if (data === null) {
-			dataStorage = sessionStorage.getItem('data');
-			console.log('dataStorage', dataStorage);
-			if (dataStorage !== null) {
-				dispatch({ type: 'reset', dataStorage });
-				setData(JSON.parse(dataStorage));
-			}
-		} else {
-			dataStorage = dataReducer ?? data;
-
-			console.log(`sessionStorage.setItem('data', ${dataStorage})`);
-			if (!dataReducer) dispatch({ type: 'reset', data });
-			sessionStorage.setItem('data', JSON.stringify(dataStorage));
-		}
-		return () => {
-			console.log('App useEffect isHome', isHome);
-			if (
-				performance.getEntriesByType('navigation')[0].type === 'reload'
-			) {
-				console.log('This page is reloaded');
-				if (dataReducer !== null && !isHome) {
-					console.log(
-						"sessionStorage.setItem('data', JSON.stringify(data)})",
-						dataReducer
-					);
-					sessionStorage.setItem('data', JSON.stringify(data));
-				}
-			} else {
-				console.log('This page is not reloaded');
-				sessionStorage.removeItem('data');
-				signOut()
-					.then(() => {
-						console.log("Déconnexion de l'utilisateur");
-						// setIsAuth(false);
-						// setData(null);
-					})
-					.catch((error) =>
-						console.log('Déconnexion inpossible:', error)
-					);
-			}
-			console.warn('App closed');
-		};
+		// 	console.log('-------------------------------------------');
+		// };
 	}, [isAuth, data, isHome]);
+
+	useEffect(() => {
+		sessionStorage.setItem('data', JSON.stringify(dataReducer));
+		sessionStorage.setItem('userData', JSON.stringify(userData));
+	}, [dataReducer, userData]);
 
 	const [color, setColor] = useState('white');
 
@@ -172,7 +182,8 @@ function App() {
 	 */
 	const logout = () => {
 		isHome = true;
-		window.sessionStorage.removeItem('data');
+		// window.sessionStorage.removeItem('data');
+		window.sessionStorage.clear();
 		setData(null);
 		dispatch({ type: 'clear' });
 		setCv(null);
@@ -214,10 +225,30 @@ function App() {
 								isHome = true;
 								window.sessionStorage.removeItem('data');
 								setData(null);
-								dispatch({ type: 'clear' });
 								setCv(null);
 								setIdent(null);
 								setglobalStyles([]);
+
+								setIsAuth(false);
+								console.log('email :', email);
+
+								getUserCVCollection(uid).then((cvs) => {
+									console.log(
+										'getUserCVCollection email :',
+										email
+									);
+									console.log(
+										'getUserCVCollection email :',
+										cvs
+									);
+
+									setUserData({
+										name: email,
+										cvList: cvs,
+									});
+									setIsAuth(true);
+								});
+								dispatch({ type: 'clear' });
 							}}
 							logout={logout}
 						/>

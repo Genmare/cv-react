@@ -5,13 +5,7 @@ import Button from '@mui/material/Button';
 import { GithubAuthProvider, signInWithPopup } from 'firebase/auth';
 import { useState } from 'react';
 import styled from 'styled-components';
-import {
-	auth,
-	getDataFromRef,
-	getUser,
-	getUserCVCollection,
-	provider,
-} from '../../firebase-config';
+import { auth, getDataFromRef, provider } from '../../firebase-config';
 
 import Animation from '../../Widget/Animation';
 import CVChoice from './CVChoice';
@@ -210,6 +204,8 @@ function Login({
 				.then((data) => {
 					console.log('Login data:', data);
 					setData(data);
+					sessionStorage.setItem('data', JSON.stringify(data));
+					// sessionStorage.setItem('data', 'toto');
 				})
 				.catch((e) => {
 					const errorMsg = `Login, impossible de downloader les data: \n${e}`;
@@ -253,6 +249,7 @@ function Login({
 				// sessionStorage.setItem('isAuth', true);
 				console.log(result);
 				setIsAuth(true);
+				sessionStorage.setItem('isAuth', true);
 			})
 			.catch((error) => {
 				// Handle Errors here.

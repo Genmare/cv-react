@@ -87,12 +87,15 @@ export const SignIn = ({ setIsAuth, setUserData, setUid }) => {
 			.then((result) => {
 				setIsLoading(false);
 				setUid(result.user.uid);
+				sessionStorage.setItem('uid', result.user.uid);
 				getUserCVCollection(result.user.uid).then((cvs) => {
 					setUserData({
 						name: result.user.email,
 						cvList: cvs,
 					});
 					setIsAuth(true);
+					sessionStorage.setItem('isAuth', true);
+					sessionStorage.setItem('email', result.user.email);
 				});
 			})
 			.catch((error) => {

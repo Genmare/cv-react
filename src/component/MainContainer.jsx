@@ -17,30 +17,19 @@ const MainContainer = ({ children }) => {
 	useEffect(() => {
 		console.log('MainContainer', 'useEffect');
 
-		window.scroll({ top: 0, behavior: 'smooth' });
+		if (performance.getEntriesByType('navigation')[0].type !== 'reload')
+			window.scroll({ top: 0, behavior: 'smooth' });
 
-		window.onbeforeunload = (event) => {
-			const e = event || window.event;
-			console.log('MainContainer', 'prevent unload');
-			// Cancel the event
-			e.preventDefault();
-			if (e) {
-				e.returnValue = ''; // Legacy method for cross browser support
-			}
-			// return ''; // Legacy method for cross browser support
-			return undefined;
-		};
-
-		return () => {
-			if (
-				performance.getEntriesByType('navigation')[0].type === 'reload'
-			) {
-				console.log('MainContainer', 'This page is reloaded');
-			} else {
-				console.log('MainContainer', 'This page is not reloaded');
-			}
-			console.warn('App closed');
-		};
+		// return () => {
+		// 	if (
+		// 		performance.getEntriesByType('navigation')[0].type === 'reload'
+		// 	) {
+		// 		console.log('MainContainer', 'This page is reloaded');
+		// 	} else {
+		// 		console.log('MainContainer', 'This page is not reloaded');
+		// 	}
+		// 	console.warn('App closed');
+		// };
 	}, []);
 
 	return <MainContainerStyle>{children}</MainContainerStyle>;

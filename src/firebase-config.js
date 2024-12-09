@@ -17,16 +17,13 @@ import {
 	doc,
 	setDoc,
 	collection,
-	FieldValue,
 	getDoc,
 	getDocs,
 	where,
-	limit,
 	query,
 	arrayUnion,
 	arrayRemove,
 	updateDoc,
-	serverTimestamp,
 	Timestamp,
 } from 'firebase/firestore';
 import {
@@ -40,7 +37,6 @@ import {
 // import { getDatabase, ref, set } from 'firebase/database';
 
 import dataDoe from './data/data copy.json';
-import { isContentEditable } from '@testing-library/user-event/dist/utils';
 import Photo from './model/Photo';
 
 // TODO: Add SDKs for Firebase products that you want to use
@@ -353,7 +349,9 @@ export const cvDefaultUri = `gs://cv-react-b26d1.appspot.com/${cvDefaultName}`;
 // Get the download URL
 // export const getImageUrl = (imgName, onLoad, directory) => {
 export const getImageUrl = (imgName, onLoad, directory) => {
-	uid = auth.currentUser.uid;
+	uid = auth.currentUser?.uid ?? sessionStorage.getItem('uid');
+	console.log('getImageUrl, uid :', uid);
+
 	const cvUri = `gs://cv-react-b26d1.appspot.com/${uid}/${imgName}`;
 	console.log('cvUri', cvUri);
 

@@ -60,6 +60,7 @@ const Sheet = React.forwardRef((props, ref) => {
 	};
 
 	const handleClick = (e) => {
+		e.preventDefault();
 		console.log('Sheet e', e);
 		onClick(e);
 		handleColor(cfStyle);

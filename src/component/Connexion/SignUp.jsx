@@ -123,6 +123,7 @@ export const SignUp = ({ setIsAuth }) => {
 				console.log('user', user);
 				setIsLoading(false);
 				setIsAuth(true);
+				sessionStorage.setItem('isAuth', true);
 			})
 			.catch((error) => {
 				setIsLoading(false);
